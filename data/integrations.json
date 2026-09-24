@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "mode": "odoo",
+  "baseUrl": "https://web.logicschool.org",
+  "database": "logic_db_bc",
+  "username": "farhan@logiceducation.org",
+  "apiKey": "Logic@123",
+  "model": "leads.logic",
+  "customFieldMap": "{\n  \"name\": \"name\",\n  \"phone_number\": \"phone\",\n  \"email_address\": \"email\",\n  \"leads_source\": \"website\"\n}",
+  "webhookUrl": "",
+  "webhookSecret": ""
+}

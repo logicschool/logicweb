@@ -1,0 +1,12 @@
+{
+  "name": "logic-school-website",
+  "version": "4.2.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "description": "Logic School premium website with full visual CMS, direct content editing, hero editor, media, typography and animation controls",
+  "engines": {
+    "node": ">=18"
+  }
+}

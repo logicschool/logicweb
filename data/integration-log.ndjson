@@ -1,0 +1,4 @@
+{"at":"2026-09-24T10:22:28.448Z","ok":false,"mode":"odoo","kind":"enquiry","error":"column \"leads_source\" is of type integer but expression is of type integer[]\nLINE 1: ... false, false, '2026-09-24 10:22:28', 915, 'new', ARRAY[831]...\n                                                             ^\nHINT:  You will need to rewrite or cast the expression.\n","name":"Logic School of Management","phone":"7736981437"}
+{"at":"2026-09-24T10:30:46.330Z","ok":true,"mode":"odoo","kind":"enquiry","source":"Website Enquiry","leadId":654765,"name":"Logic School of Management","phone":"7736981437"}
+{"at":"2026-09-24T10:31:52.535Z","ok":true,"mode":"odoo","kind":"enquiry","source":"Website Enquiry","leadId":654766,"name":"adarsh","phone":"8111907283"}
+{"at":"2026-09-24T10:58:38.072Z","ok":true,"mode":"odoo","kind":"contact","source":"Website Placement Assistance","leadId":654767,"name":"abinend","phone":"7736981437"}

@@ -1,0 +1,234 @@
+{
+  "siteName": "Logic School of Management",
+  "tagline": "Career-focused commerce and professional education",
+  "logoUrl": "/uploads/LOGO-FOR-WEBSITE-SAMPLE-01-1790142737715.png",
+  "faviconUrl": "/uploads/FEVICON-1790250963407.svg",
+  "primaryColor": "#087333",
+  "secondaryColor": "#ffc400",
+  "phone": "+91 98958 18581",
+  "whatsapp": "919895818581",
+  "email": "info@logiceducation.org",
+  "address": "Palarivattom Junction, Kochi, Kerala 682025",
+  "facebook": "https://www.facebook.com/logicschoolofmanagement",
+  "instagram": "https://www.instagram.com/logic.veranda?stkn=MWhqNmk1NWp1b2d3dw==",
+  "youtube": "https://www.youtube.com/channel/UCR0j6YkQs2riuBSVbi70ilg",
+  "linkedin": "www.linkedin.com/in/logic-school-of-management-004315290",
+  "announcementEnabled": true,
+  "announcementText": "Admissions Open",
+  "announcementLink": "/admissions.html",
+  "customHeadCode": "",
+  "navigation": [
+    {
+      "label": "Courses",
+      "url": "/courses/index.html"
+    },
+    {
+      "label": "Results",
+      "url": "/results.html"
+    },
+    {
+      "label": "Placements",
+      "url": "/placements.html"
+    },
+    {
+      "label": "Batches",
+      "url": "/batches.html"
+    },
+    {
+      "label": "Branches",
+      "url": "/branches.html"
+    },
+    {
+      "label": "About",
+      "url": "/about.html"
+    },
+    {
+      "label": "Contact",
+      "url": "/contact.html"
+    }
+  ],
+  "footerCourses": [
+    {
+      "label": "CA",
+      "url": "/courses/ca.html"
+    },
+    {
+      "label": "CMA India",
+      "url": "/courses/cma-india.html"
+    },
+    {
+      "label": "CIAP",
+      "url": "/courses/ciap.html"
+    },
+    {
+      "label": "ACCA",
+      "url": "/courses/acca.html"
+    },
+    {
+      "label": "CMA USA",
+      "url": "/courses/cma-usa.html"
+    },
+    {
+      "label": "EA",
+      "url": "/courses/ea.html"
+    },
+    {
+      "label": "BAT Pro",
+      "url": "/courses/bat.html"
+    }
+  ],
+  "animations": {
+    "enabled": true,
+    "respectReducedMotion": true,
+    "once": true,
+    "preset": "fade-up",
+    "duration": 480,
+    "delay": 0,
+    "distance": 14,
+    "stagger": 45,
+    "threshold": 0.05,
+    "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+    "autoSections": false,
+    "autoCards": true,
+    "autoText": false,
+    "autoImages": false,
+    "autoButtons": false,
+    "customSelectors": "",
+    "smoothScroll": true,
+    "cardHover": true,
+    "imageHover": true,
+    "buttonHover": true,
+    "premiumSpotlight": true,
+    "magneticButtons": true,
+    "countUp": true,
+    "scrollProgress": true,
+    "heroParallax": true
+  },
+  "typography": {
+    "enabled": false,
+    "h1Size": 80,
+    "h1MobileSize": 52,
+    "h1Weight": 800,
+    "h2Size": 56,
+    "h2MobileSize": 38,
+    "h2Weight": 800,
+    "h3Size": 20,
+    "h3MobileSize": 18,
+    "h3Weight": 700,
+    "bodySize": 14,
+    "bodyMobileSize": 14,
+    "bodyWeight": 400,
+    "navSize": 12,
+    "navWeight": 700,
+    "buttonSize": 13,
+    "buttonWeight": 800,
+    "labelSize": 10,
+    "labelWeight": 800
+  },
+  "socialLinks": [
+    {
+      "label": "Facebook",
+      "url": "https://www.facebook.com/logicschoolofmanagement",
+      "iconUrl": "/uploads/FACEBOOK-LOGO-FOR-WEBSITE-1790232333478.svg",
+      "fit": "contain"
+    },
+    {
+      "label": "Instagram",
+      "url": "https://www.instagram.com/logic.veranda?stkn=MWhqNmk1NWp1b2d3dw==",
+      "iconUrl": "/uploads/INSTAGRAM-LOGO-FOR-WEBSITE-1790232343259.svg",
+      "fit": "contain"
+    },
+    {
+      "label": "YouTube",
+      "url": "https://www.youtube.com/channel/UCR0j6YkQs2riuBSVbi70ilg",
+      "iconUrl": "/uploads/YOUTUBE-LOGO-FOR-WEBSITE-1790232421301.svg",
+      "fit": "contain"
+    },
+    {
+      "label": "LinkedIn",
+      "url": "www.linkedin.com/in/logic-school-of-management-004315290",
+      "iconUrl": "/uploads/LINKEDIN-LOGO-FOR-WEBSITE-1790232521289.svg",
+      "fit": "contain"
+    }
+  ],
+  "brochures": {
+    "master": {
+      "enabled": false,
+      "label": "Download All Course Brochure",
+      "url": ""
+    },
+    "courses": {
+      "ca": {
+        "enabled": false,
+        "label": "Download CA Brochure",
+        "url": ""
+      },
+      "cma-india": {
+        "enabled": false,
+        "label": "Download CMA India Brochure",
+        "url": ""
+      },
+      "ciap": {
+        "enabled": false,
+        "label": "Download CIAP Brochure",
+        "url": ""
+      },
+      "acca": {
+        "enabled": false,
+        "label": "Download ACCA Brochure",
+        "url": ""
+      },
+      "cma-usa": {
+        "enabled": false,
+        "label": "Download CMA USA Brochure",
+        "url": ""
+      },
+      "cpa-usa": {
+        "enabled": false,
+        "label": "Download CPA USA Brochure",
+        "url": ""
+      },
+      "ea": {
+        "enabled": false,
+        "label": "Download EA Brochure",
+        "url": ""
+      },
+      "bcom-acca": {
+        "enabled": false,
+        "label": "Download B.Com + ACCA Brochure",
+        "url": ""
+      },
+      "mba-acca": {
+        "enabled": false,
+        "label": "Download MBA + ACCA Brochure",
+        "url": ""
+      },
+      "mcom-cpa": {
+        "enabled": false,
+        "label": "Download M.Com + CPA Brochure",
+        "url": ""
+      },
+      "bat": {
+        "enabled": false,
+        "label": "Download BAT Pro Brochure",
+        "url": ""
+      },
+      "dipifr": {
+        "enabled": false,
+        "label": "Download DipIFR Brochure",
+        "url": ""
+      }
+    }
+  },
+  "tracking": {
+    "enabled": false,
+    "gtmEnabled": false,
+    "gtmId": "",
+    "ga4Enabled": false,
+    "ga4Id": "",
+    "metaEnabled": false,
+    "metaPixelId": "",
+    "trackConversions": true,
+    "trackContactClicks": true
+  }
+}

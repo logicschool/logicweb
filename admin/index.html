@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Logic CMS Admin</title>
+<link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div id="toast" class="toast"></div>
+
+<section id="loginView" class="login-shell">
+  <div class="login-card">
+    <div class="login-brand"><span>L</span><div><b>Logic CMS</b><small>Website Administration</small></div></div>
+    <h1>Welcome back</h1>
+    <p>Sign in to edit the website, upload images, manage leads and update global settings.</p>
+    <form id="loginForm">
+      <label>Username<input name="username" value="admin" autocomplete="username" required></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="primary" type="submit">Sign in</button>
+      <div id="loginError" class="error"></div>
+    </form>
+  </div>
+</section>
+
+<div id="appView" class="app-shell hidden">
+  <aside class="sidebar">
+    <a class="admin-brand" href="/admin/"><span>L</span><div><b>Logic CMS</b><small>Admin Panel</small></div></a>
+    <nav id="adminNav">
+      <button class="active" data-section="dashboard"><i>⌂</i> Dashboard</button>
+      <button data-section="branding"><i>◆</i> Branding & Global</button>
+      <button data-section="pages"><i>✎</i> Page Editor</button>
+      <button data-section="typography"><i>Aa</i> Typography</button>
+      <button data-section="animations"><i>✦</i> Animations</button>
+      <button data-section="media"><i>▧</i> Media Library</button>
+      <button data-section="brochures"><i>⇩</i> Brochures</button>
+      <button data-section="leads"><i>◎</i> Leads & Forms</button>
+      <button data-section="integrations"><i>↔</i> CRM / Odoo</button>
+      <button data-section="tracking"><i>⌁</i> Tracking & Analytics</button>
+      <button data-section="developer"><i>⌘</i> Developer</button>
+      <button data-section="security"><i>⚿</i> Security</button>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="/" target="_blank">View live website ↗</a>
+      <button id="logoutBtn">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="topbar">
+      <div><button id="mobileMenu" class="mobile-menu">☰</button><span id="sectionKicker">OVERVIEW</span><h1 id="sectionTitle">Dashboard</h1></div>
+      <div class="top-actions"><span class="status-dot"></span><span>CMS connected</span></div>
+    </header>
+
+    <section id="section-dashboard" class="admin-section active">
+      <div class="stat-grid" id="dashboardStats"></div>
+      <div class="panel-grid two">
+        <article class="panel">
+          <div class="panel-head"><div><span class="kicker">RECENT ACTIVITY</span><h2>Latest enquiries</h2></div><button class="link-btn" data-go="leads">View all →</button></div>
+          <div id="recentLeads" class="simple-list"></div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="kicker">QUICK ACTIONS</span><h2>Manage your site</h2></div></div>
+          <div class="quick-actions">
+            <button data-go="pages"><b>✎ Edit a page</b><span>Change text, images, links and sections visually.</span></button>
+            <button data-go="media"><b>▧ Upload images</b><span>Add logos, course photos, banners and campus images.</span></button>
+            <button data-go="brochures"><b>⇩ Manage brochures</b><span>Upload the master brochure and course-specific PDF brochures.</span></button>
+            <button data-go="integrations"><b>↔ Connect CRM / Odoo</b><span>Send website leads directly to Odoo or a CRM webhook.</span></button>
+            <button data-go="tracking"><b>⌁ Tracking & Analytics</b><span>Manage GTM, GA4, Meta Pixel and conversion events from one place.</span></button>
+            <button data-go="typography"><b>Aa Edit typography</b><span>Change font sizes and weights without touching CSS.</span></button>
+            <button data-go="animations"><b>✦ Edit animations</b><span>Control entrance effects, speed, stagger and hover motion.</span></button>
+            <button data-go="branding"><b>◆ Update branding</b><span>Logo, colors, phone, email, WhatsApp and social links.</span></button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="section-branding" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">GLOBAL SETTINGS</span><h2>Branding & website details</h2><p>These settings update common details across the website without editing every page separately.</p></div><button id="saveSettings" class="primary">Save global settings</button></div>
+      <div class="panel-grid two settings-grid">
+        <article class="panel">
+          <h3>Brand identity</h3>
+          <div class="logo-preview-wrap"><div id="logoPreview" class="logo-preview">No logo uploaded</div><button id="chooseLogo" class="secondary" type="button">Choose / Upload Logo</button></div>
+          <div class="form-grid">
+            <label>Site name<input id="setSiteName"></label>
+            <label>Tagline<input id="setTagline"></label>
+            <label class="full">Logo URL<input id="setLogoUrl" placeholder="/uploads/your-logo.png"></label>
+            <label class="full">Favicon URL<input id="setFaviconUrl" placeholder="/assets/favicon.svg"></label>
+            <label>Primary green<input id="setPrimary" type="color"></label>
+            <label>Accent yellow<input id="setSecondary" type="color"></label>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Contact details</h3>
+          <div class="form-grid">
+            <label>Phone<input id="setPhone"></label>
+            <label>WhatsApp number<input id="setWhatsapp" placeholder="919895818581"></label>
+            <label class="full">Email<input id="setEmail" type="email"></label>
+            <label class="full">Main address<textarea id="setAddress" rows="3"></textarea></label>
+          </div>
+          <div class="social-settings-head">
+            <div>
+              <h3 class="subhead">Social icons & links</h3>
+              <p class="help">Edit the destination URL and replace each icon with an uploaded SVG, PNG, WebP or image. Use <b>Contain</b> for transparent icons, or <b>Cover & clip</b> to fill the rounded box with an image.</p>
+            </div>
+            <button id="addSocialLink" class="secondary" type="button">+ Add social icon</button>
+          </div>
+          <div id="socialLinksEditor" class="social-links-editor"></div>
+          <div class="social-design-note"><b>Recommended design file:</b> 128 × 128 px, 1:1 square. SVG is best for icons. PNG/WebP can be transparent. For full-image tiles, the CMS clips the image automatically to the rounded box.</div>
+        </article>
+        <article class="panel">
+          <h3>Navigation & footer links</h3>
+          <p class="help">One item per line in the format <b>Label | /page.html</b>.</p>
+          <label>Main navigation<textarea id="setNavigation" rows="9" placeholder="Courses | /courses/index.html"></textarea></label>
+          <label>Footer course links<textarea id="setFooterCourses" rows="9" placeholder="CA | /courses/ca.html"></textarea></label>
+        </article>
+        <article class="panel">
+          <h3>Announcement bar</h3>
+          <label class="toggle-row"><input id="setAnnouncementEnabled" type="checkbox"><span>Show announcement on all pages</span></label>
+          <div class="form-grid single">
+            <label>Announcement text<input id="setAnnouncementText"></label>
+            <label>Announcement link<input id="setAnnouncementLink" placeholder="/admissions.html"></label>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>Custom head code</h3>
+          <p class="help">For analytics pixels, verification tags or other trusted snippets. Only add code you understand.</p>
+          <textarea id="setCustomHead" class="codebox short" spellcheck="false"></textarea>
+        </article>
+      </div>
+    </section>
+
+    <section id="section-pages" class="admin-section wide-section">
+      <div class="section-intro editor-head">
+        <div><span class="kicker">VISUAL WEBSITE EDITOR</span><h2>Edit every page</h2><p>Click an element in the preview, edit it in the inspector, and save. Use Source mode for complete HTML control.</p></div>
+        <div class="editor-actions"><button id="newPage" class="secondary">New Page</button><button id="duplicatePage" class="secondary">Duplicate</button><button id="deletePage" class="danger">Delete</button><button id="reloadPage" class="secondary">Reload</button><button id="savePage" class="primary">Save Page</button></div>
+      </div>
+      <div class="editor-toolbar panel">
+        <label>Page<select id="pageSelect"></select></label>
+        <div class="segmented"><button id="visualMode" class="active">Visual</button><button id="sourceMode">HTML Source</button></div>
+        <a id="openPage" class="secondary button-link" target="_blank">Open page ↗</a>
+        <span id="pageSaveState" class="save-state">No unsaved changes</span>
+      </div>
+      <div id="homepageHeroEditor" class="panel hero-quick-editor hidden">
+        <div class="panel-head"><div><span class="kicker">HOMEPAGE HERO</span><h3>Edit hero content</h3><p class="help">Change the hero text, buttons, trust line and form copy without touching HTML. Click <b>Apply to Preview</b>, then <b>Save Page</b>.</p></div><button id="applyHeroQuick" class="primary" type="button">Apply to Preview</button></div>
+        <div class="hero-editor-grid">
+          <div class="hero-editor-card">
+            <h4>Main heading & copy</h4>
+            <label>Badge text<input id="heroBadgeText" placeholder="ADMISSIONS OPEN · 2026–27"></label>
+            <div class="form-grid">
+              <label>Heading line 1<input id="heroLine1"></label>
+              <label>Heading line 2<input id="heroLine2"></label>
+              <label>Highlighted line 3<input id="heroLine3"></label>
+              <label>Highlight color<input id="heroAccentColor" type="color"></label>
+            </div>
+            <label>Description<textarea id="heroDescription" rows="4"></textarea></label>
+            <div class="form-grid">
+              <label>Heading color<input id="heroHeadingColor" type="color"></label>
+              <label>Section background<input id="heroBackgroundColor" type="color"></label>
+            </div>
+          </div>
+          <div class="hero-editor-card">
+            <h4>Buttons & trust text</h4>
+            <div class="form-grid">
+              <label>Primary button text<input id="heroPrimaryText"></label>
+              <label>Primary button link<input id="heroPrimaryLink"></label>
+              <label>Secondary button text<input id="heroSecondaryText"></label>
+              <label>Secondary button link<input id="heroSecondaryLink"></label>
+              <label>Trust prefix<input id="heroTrustPrefix"></label>
+              <label>Trust number<input id="heroTrustNumber"></label>
+              <label class="full">Trust suffix<input id="heroTrustSuffix"></label>
+            </div>
+          </div>
+          <div class="hero-editor-card">
+            <h4>Enquiry form copy</h4>
+            <label>Small label<input id="heroFormLabel"></label>
+            <label>Form heading<input id="heroFormTitle"></label>
+            <label>Form description<textarea id="heroFormDescription" rows="3"></textarea></label>
+            <div class="form-grid">
+              <label>Submit button text<input id="heroFormSubmit"></label>
+              <label>WhatsApp link text<input id="heroFormWhatsapp"></label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="visualEditor" class="visual-editor">
+        <div class="preview-shell panel">
+          <div class="preview-bar"><span></span><span></span><span></span><b>Website preview</b></div>
+          <iframe id="pageFrame" title="Website page preview"></iframe>
+        </div>
+        <aside class="inspector panel">
+          <div class="panel-head"><div><span class="kicker">ELEMENT INSPECTOR</span><h3 id="selectedElementName">Select an element</h3></div></div>
+          <div class="seo-mini">
+            <h4>Page SEO</h4>
+            <label>Browser title<input id="pageSeoTitle"></label>
+            <label>Meta description<textarea id="pageSeoDescription" rows="3"></textarea></label>
+            <button id="applySeo" class="secondary mini" type="button">Apply SEO to preview</button>
+          </div>
+          <hr>
+          <div id="inspectorEmpty" class="empty-state">Click text, an image, a button, a link or any section in the preview.</div>
+          <div id="inspectorFields" class="hidden">
+            <div class="direct-edit-tip"><b>Tip:</b> Double-click text in the preview to edit it directly. Press <b>Ctrl + Enter</b> to finish.</div>
+            <label>Plain text<textarea id="elText" rows="4" placeholder="Edit visible text here"></textarea></label>
+            <p class="help inspector-text-help">Plain text is safest for normal text. Use Rich content below only when the element contains formatting such as highlighted words or line breaks.</p>
+            <label>Rich content / inner HTML<textarea id="elHtml" rows="7"></textarea></label>
+            <label id="hrefRow">Link URL<input id="elHref"></label>
+            <label id="srcRow">Image URL<input id="elSrc"><button id="chooseElementImage" class="secondary mini" type="button">Choose from Media</button></label>
+            <label id="altRow">Image alt text<input id="elAlt"></label>
+            <p id="imageSizeHint" class="help image-size-hint hidden"></p>
+            <label>CSS classes<input id="elClass"></label>
+            <label>Element HTML (advanced)<textarea id="elOuter" rows="6"></textarea></label>
+            <label>Inline style<textarea id="elStyle" rows="3"></textarea></label>
+            <div class="element-appearance-box">
+              <h4>Element appearance</h4>
+              <div class="mini-field-grid"><label>Text color<input id="elTextColor" type="color"></label><label>Background<input id="elBackgroundColor" type="color"></label></div>
+              <div class="mini-field-grid"><label>Text alignment<select id="elTextAlign"><option value="">Inherited</option><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option><option value="justify">Justify</option></select></label><label>Border radius (px)<input id="elBorderRadius" type="number" min="0" max="200" step="1" placeholder="Inherited"></label></div>
+              <div class="mini-field-grid"><label>Line height<input id="elLineHeight" type="number" min="0.6" max="4" step="0.05" placeholder="Inherited"></label><label>Letter spacing (px)<input id="elLetterSpacing" type="number" min="-10" max="30" step="0.1" placeholder="Inherited"></label></div>
+            </div>
+            <div class="element-typography-box">
+              <h4>Element typography</h4>
+              <div class="mini-field-grid"><label>Font size (px)<input id="elFontSize" type="number" min="6" max="220" step="1" placeholder="Inherited"></label><label>Font weight<select id="elFontWeight"><option value="">Inherited / global</option><option value="300">300 Light</option><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option><option value="900">900 Black</option></select></label></div>
+              <p id="elFontComputed" class="help">Select a text element to see its current font settings.</p>
+            </div>
+            <div class="element-animation-box">
+              <h4>Element animation</h4>
+              <label>Entrance effect<select id="elAnimation"><option value="">Use global / automatic</option><option value="none">No animation</option><option value="fade-up">Fade up</option><option value="fade-down">Fade down</option><option value="fade-left">Fade from left</option><option value="fade-right">Fade from right</option><option value="fade">Fade only</option><option value="zoom-in">Zoom in</option><option value="zoom-out">Zoom out</option><option value="flip-up">Flip up</option></select></label>
+              <div class="mini-field-grid"><label>Duration ms<input id="elAnimationDuration" type="number" min="100" max="5000" step="50" placeholder="Global"></label><label>Delay ms<input id="elAnimationDelay" type="number" min="0" max="10000" step="50" placeholder="Global"></label></div>
+              <label>Movement distance px<input id="elAnimationDistance" type="number" min="0" max="200" step="1" placeholder="Global"></label>
+              <p class="help">These values are saved directly on this element and override the global animation defaults.</p>
+            </div>
+            <div class="inspector-buttons"><button id="applyElement" class="primary">Apply changes</button><button id="duplicateElement" class="secondary">Duplicate</button><button id="moveElementUp" class="secondary">Move ↑</button><button id="moveElementDown" class="secondary">Move ↓</button><button id="deleteElement" class="danger inspector-span-two">Delete element</button></div>
+            <hr>
+            <h4>Insert content</h4>
+            <div class="insert-grid"><button data-insert="p">Paragraph</button><button data-insert="h2">Heading</button><button data-insert="img">Image</button><button data-insert="section">Section</button></div>
+          </div>
+        </aside>
+      </div>
+      <div id="sourceEditor" class="panel hidden"><textarea id="pageSource" class="codebox giant" spellcheck="false"></textarea></div>
+    </section>
+
+
+    <section id="section-typography" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">TYPE SYSTEM</span><h2>Website typography</h2><p>Control font size and font weight across the website without editing CSS. Desktop and mobile heading sizes can be adjusted separately.</p></div><div class="action-row"><button id="resetTypography" class="secondary">Reset Defaults</button><button id="saveTypography" class="primary">Save &amp; Apply</button></div></div>
+      <div class="panel-grid two typography-settings-grid">
+        <article class="panel">
+          <h3>Typography control</h3>
+          <label class="toggle-row"><input id="typoEnabled" type="checkbox"><span>Enable custom typography settings</span></label>
+          <p class="help">Changing any typography value now turns this on automatically. Click <b>Save &amp; Apply</b> to publish the changes across the website. Turn it off only when you want to restore the original premium typography.</p>
+          <div class="type-setting">
+            <div class="type-setting-head"><div><b>H1 · Hero / page titles</b><span>Main page headings</span></div><output id="typoH1Readout">80 px</output></div>
+            <div class="range-number"><input id="typoH1Size" type="range" min="32" max="120" step="1"><input id="typoH1SizeNumber" type="number" min="32" max="120" step="1"></div>
+            <div class="mini-field-grid"><label>Mobile size (px)<input id="typoH1MobileSize" type="number" min="28" max="90" step="1"></label><label>Weight<select id="typoH1Weight"><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option><option value="900">900 Black</option></select></label></div>
+          </div>
+          <div class="type-setting">
+            <div class="type-setting-head"><div><b>H2 · Section headings</b><span>Major section titles</span></div><output id="typoH2Readout">56 px</output></div>
+            <div class="range-number"><input id="typoH2Size" type="range" min="24" max="90" step="1"><input id="typoH2SizeNumber" type="number" min="24" max="90" step="1"></div>
+            <div class="mini-field-grid"><label>Mobile size (px)<input id="typoH2MobileSize" type="number" min="22" max="70" step="1"></label><label>Weight<select id="typoH2Weight"><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option><option value="900">900 Black</option></select></label></div>
+          </div>
+          <div class="type-setting">
+            <div class="type-setting-head"><div><b>H3 · Card headings</b><span>Course cards and subheadings</span></div><output id="typoH3Readout">20 px</output></div>
+            <div class="range-number"><input id="typoH3Size" type="range" min="14" max="48" step="1"><input id="typoH3SizeNumber" type="number" min="14" max="48" step="1"></div>
+            <div class="mini-field-grid"><label>Mobile size (px)<input id="typoH3MobileSize" type="number" min="14" max="40" step="1"></label><label>Weight<select id="typoH3Weight"><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option><option value="900">900 Black</option></select></label></div>
+          </div>
+          <div class="type-setting">
+            <div class="type-setting-head"><div><b>Paragraph text</b><span>Standard paragraph copy</span></div><output id="typoBodyReadout">14 px</output></div>
+            <div class="range-number"><input id="typoBodySize" type="range" min="10" max="24" step="1"><input id="typoBodySizeNumber" type="number" min="10" max="24" step="1"></div>
+            <div class="mini-field-grid"><label>Mobile size (px)<input id="typoBodyMobileSize" type="number" min="10" max="22" step="1"></label><label>Weight<select id="typoBodyWeight"><option value="300">300 Light</option><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option></select></label></div>
+          </div>
+        </article>
+        <article class="panel typography-preview-panel">
+          <div class="panel-head"><div><span class="kicker">LIVE PREVIEW</span><h3>Typography preview</h3></div><span id="typographyModeBadge" class="type-mode-badge">Custom typography off</span></div>
+          <div id="typographyPreview" class="typography-preview">
+            <div class="type-preview-nav">Courses &nbsp; Results &nbsp; Placements &nbsp; Branches</div>
+            <span class="type-preview-label">ADMISSIONS OPEN · 2026–27</span>
+            <h1>Build Your Career in Commerce.</h1>
+            <h2>Premium learning for ambitious careers.</h2>
+            <h3>Professional programmes</h3>
+            <p>Explore career-focused programmes with experienced faculty, practical learning and flexible batch options.</p>
+            <button type="button">Apply Now →</button>
+          </div>
+          <p class="help">This preview updates instantly. Click <b>Save Typography</b> to publish the settings to the website.</p>
+        </article>
+        <article class="panel">
+          <h3>Navigation & buttons</h3>
+          <div class="type-setting compact">
+            <div class="type-setting-head"><div><b>Navigation</b><span>Desktop and mobile menu links</span></div><output id="typoNavReadout">12 px</output></div>
+            <div class="range-number"><input id="typoNavSize" type="range" min="9" max="22" step="1"><input id="typoNavSizeNumber" type="number" min="9" max="22" step="1"></div>
+            <label>Weight<select id="typoNavWeight"><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option></select></label>
+          </div>
+          <div class="type-setting compact">
+            <div class="type-setting-head"><div><b>Buttons</b><span>Apply, enquiry and action buttons</span></div><output id="typoButtonReadout">13 px</output></div>
+            <div class="range-number"><input id="typoButtonSize" type="range" min="9" max="24" step="1"><input id="typoButtonSizeNumber" type="number" min="9" max="24" step="1"></div>
+            <label>Weight<select id="typoButtonWeight"><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option><option value="900">900 Black</option></select></label>
+          </div>
+          <div class="type-setting compact">
+            <div class="type-setting-head"><div><b>Labels & eyebrow text</b><span>Form labels, tags and small uppercase text</span></div><output id="typoLabelReadout">10 px</output></div>
+            <div class="range-number"><input id="typoLabelSize" type="range" min="7" max="18" step="1"><input id="typoLabelSizeNumber" type="number" min="7" max="18" step="1"></div>
+            <label>Weight<select id="typoLabelWeight"><option value="400">400 Regular</option><option value="500">500 Medium</option><option value="600">600 Semi Bold</option><option value="700">700 Bold</option><option value="800">800 Extra Bold</option><option value="900">900 Black</option></select></label>
+          </div>
+        </article>
+        <article class="panel">
+          <h3>How it works</h3>
+          <div class="motion-note"><b>Global typography</b><p>Use this Typography page for site-wide font sizing and weight. The mobile values apply below 768px.</p></div>
+          <div class="motion-note"><b>Individual text</b><p>For a single heading or paragraph, open <b>Page Editor</b>, select the element, then use <b>Element typography</b>. An individual value overrides the global setting.</p></div>
+          <div class="motion-note"><b>Safe reset</b><p>Turning custom typography off restores the original premium design typography without deleting your saved values.</p></div>
+        </article>
+      </div>
+    </section>
+
+
+    <section id="section-animations" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">MOTION CONTROL</span><h2>Website animations</h2><p>Control entrance animations and hover motion across the entire website. You can also override animation settings on individual elements from the Page Editor.</p></div><div class="action-row"><button id="resetAnimations" class="secondary">Reset Defaults</button><button id="saveAnimations" class="primary">Save Animations</button></div></div>
+      <div class="panel-grid two animation-settings-grid">
+        <article class="panel">
+          <h3>Global motion</h3>
+          <label class="toggle-row"><input id="animEnabled" type="checkbox"><span>Enable website animations</span></label>
+          <label class="toggle-row"><input id="animRespectReduced" type="checkbox"><span>Respect visitor “Reduce Motion” setting</span></label>
+          <label class="toggle-row"><input id="animOnce" type="checkbox"><span>Animate each element only once</span></label>
+          <div class="form-grid">
+            <label class="full">Default entrance effect<select id="animPreset"><option value="fade-up">Fade up</option><option value="fade-down">Fade down</option><option value="fade-left">Fade from left</option><option value="fade-right">Fade from right</option><option value="fade">Fade only</option><option value="zoom-in">Zoom in</option><option value="zoom-out">Zoom out</option><option value="flip-up">Flip up</option></select></label>
+            <label>Duration (ms)<input id="animDuration" type="number" min="100" max="5000" step="50"></label>
+            <label>Base delay (ms)<input id="animDelay" type="number" min="0" max="5000" step="50"></label>
+            <label>Movement distance (px)<input id="animDistance" type="number" min="0" max="200" step="1"></label>
+            <label>Stagger (ms)<input id="animStagger" type="number" min="0" max="1000" step="10"></label>
+            <label>Viewport trigger (0–1)<input id="animThreshold" type="number" min="0" max="1" step="0.01"></label>
+            <label>Easing<select id="animEasing"><option value="cubic-bezier(0.22, 1, 0.36, 1)">Smooth / Premium</option><option value="ease-out">Ease out</option><option value="ease-in-out">Ease in & out</option><option value="linear">Linear</option><option value="cubic-bezier(0.16, 1, 0.3, 1)">Soft spring</option><option value="cubic-bezier(0.34, 1.56, 0.64, 1)">Bounce</option></select></label>
+          </div>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="kicker">LIVE SAMPLE</span><h3>Animation preview</h3></div><button id="replayAnimation" class="secondary mini">Replay</button></div>
+          <div id="animationPreview" class="animation-preview"><div class="preview-demo-card"><span>LOGIC</span><h3>Build your career with confidence.</h3><p>This preview uses the settings selected on the left.</p><button type="button">Explore Courses</button></div></div>
+          <p class="help">Preview only. Click <b>Save Animations</b> to apply the settings to the live website.</p>
+        </article>
+        <article class="panel">
+          <h3>Automatic animation targets</h3>
+          <p class="help">For a cleaner site, animate cards or selected elements instead of entire sections. Content already visible on page load is always shown immediately.</p>
+          <div class="toggle-stack">
+            <label class="toggle-row"><input id="animAutoSections" type="checkbox"><span>Animate whole sections (off is recommended to prevent blank areas on load)</span></label>
+            <label class="toggle-row"><input id="animAutoCards" type="checkbox"><span>Course, branch, result and information cards</span></label>
+            <label class="toggle-row"><input id="animAutoText" type="checkbox"><span>Hero headings and key text groups</span></label>
+            <label class="toggle-row"><input id="animAutoImages" type="checkbox"><span>Content images</span></label>
+            <label class="toggle-row"><input id="animAutoButtons" type="checkbox"><span>Buttons and text links</span></label>
+          </div>
+          <label>Custom CSS selectors<textarea id="animCustomSelectors" rows="5" placeholder=".my-special-section
+#homepage-video
+.team-card"></textarea></label>
+          <p class="help">Add one selector per line. Advanced users can target any element using CSS selectors.</p>
+        </article>
+        <article class="panel">
+          <h3>Hover & scrolling effects</h3>
+          <div class="toggle-stack">
+            <label class="toggle-row"><input id="animSmoothScroll" type="checkbox"><span>Smooth anchor scrolling</span></label>
+            <label class="toggle-row"><input id="animCardHover" type="checkbox"><span>Lift cards slightly on hover</span></label>
+            <label class="toggle-row"><input id="animImageHover" type="checkbox"><span>Subtle image zoom on hover</span></label>
+            <label class="toggle-row"><input id="animButtonHover" type="checkbox"><span>Lift buttons on hover</span></label>
+          </div>
+          <h3 class="subhead">Premium interactions</h3>
+          <div class="toggle-stack">
+            <label class="toggle-row"><input id="animPremiumSpotlight" type="checkbox"><span>Interactive light / spotlight on cards</span></label>
+            <label class="toggle-row"><input id="animMagneticButtons" type="checkbox"><span>Magnetic pointer movement on buttons</span></label>
+            <label class="toggle-row"><input id="animCountUp" type="checkbox"><span>Animate statistics when they enter the screen</span></label>
+            <label class="toggle-row"><input id="animScrollProgress" type="checkbox"><span>Show premium scroll progress line</span></label>
+            <label class="toggle-row"><input id="animHeroParallax" type="checkbox"><span>Interactive hero glow follows the pointer</span></label>
+          </div>
+          <div class="motion-note"><b>Individual overrides</b><p>Open <b>Page Editor</b>, click any element, and use the new <b>Element animation</b> controls. Set a specific effect, duration, delay and movement distance for that element.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="section-media" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">ASSET MANAGER</span><h2>Media Library</h2><p>Upload logos, photos, banners, course images and other website graphics.</p></div><div><input id="mediaUpload" type="file" accept="image/*" multiple hidden><button id="uploadMediaBtn" class="primary">Upload Images</button></div></div>
+      <div class="panel media-toolbar"><input id="mediaSearch" placeholder="Search media by filename"><span id="mediaCount"></span></div>
+      <div id="mediaGrid" class="media-grid"></div>
+    </section>
+
+    
+    <section id="section-brochures" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">PDF MANAGER</span><h2>Course brochures</h2><p>Upload the all-course brochure for the homepage and individual PDF brochures for each course page. Every public brochure download is lead-gated: visitors enter their contact details first, then the lead is saved and routed to Odoo / your webhook when enabled.</p></div><button id="saveBrochures" class="primary">Save Brochure Settings</button></div>
+      <article class="panel brochure-master-panel">
+        <div class="panel-head"><div><span class="kicker">LANDING PAGE</span><h3>Full course brochure</h3><p class="help">When enabled, a download button appears in the homepage hero.</p></div><span class="pdf-badge">PDF</span></div>
+        <div class="brochure-editor-grid">
+          <label class="toggle-row"><input id="masterBrochureEnabled" type="checkbox"><span>Show on homepage</span></label>
+          <label>Button text<input id="masterBrochureLabel" placeholder="Download All Course Brochure"></label>
+          <label class="brochure-url-field">PDF URL<input id="masterBrochureUrl" placeholder="/uploads/brochures/all-courses.pdf"></label>
+          <div class="brochure-upload-actions"><input id="masterBrochureFile" type="file" accept="application/pdf" hidden><button id="uploadMasterBrochure" class="secondary" type="button">Upload / Replace PDF</button><a id="openMasterBrochure" class="secondary button-link hidden" target="_blank" rel="noopener">Open current PDF ↗</a></div>
+        </div>
+      </article>
+      <div class="section-subhead"><div><span class="kicker">COURSE PAGES</span><h3>Individual brochures</h3><p class="help">Each enabled PDF creates a “Download Brochure” button in that course hero.</p></div></div>
+      <div id="courseBrochureGrid" class="brochure-course-grid"></div>
+      <article class="panel brochure-note"><b>Lead-gated downloads</b><p>Visitors must submit name and mobile/WhatsApp before a brochure unlocks. Email is optional. The submission appears in Leads & Forms and is forwarded through CRM / Odoo when that integration is enabled.</p></article><article class="panel brochure-note"><b>Recommended PDF</b><p>Keep each brochure under 30 MB. A4 portrait or landscape both work. Use compressed PDF export for faster mobile downloads.</p></article>
+    </section>
+
+    <section id="section-integrations" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">LEAD ROUTING</span><h2>CRM / Odoo integration</h2><p>Send every website enquiry directly from this server to Odoo CRM or to a CRM webhook. Local lead storage remains enabled as a backup.</p></div><div class="action-row"><button id="testIntegration" class="secondary">Test Connection</button><button id="saveIntegration" class="primary">Save Integration</button></div></div>
+      <div class="panel-grid two integration-grid">
+        <article class="panel">
+          <h3>Connection</h3>
+          <label class="toggle-row"><input id="crmEnabled" type="checkbox"><span>Enable automatic CRM sync</span></label>
+          <label>Integration mode<select id="crmMode"><option value="disabled">Disabled</option><option value="odoo">Odoo direct (JSON-RPC)</option><option value="webhook">Webhook / automation URL</option></select></label>
+          <div id="odooDirectFields" class="integration-mode-fields">
+            <div class="form-grid">
+              <label class="full">Odoo base URL<input id="odooBaseUrl" placeholder="https://yourcompany.odoo.com"></label>
+              <label>Database<input id="odooDatabase" placeholder="your_database"></label>
+              <label>Username / login<input id="odooUsername" placeholder="crm@company.com"></label>
+              <label class="full">API key<input id="odooApiKey" type="password" autocomplete="new-password" placeholder="Leave blank to keep saved API key"></label>
+              <label class="full">Odoo model<input id="odooModel" value="leads.logic"></label>
+            </div>
+            <label>Custom field mapping JSON<textarea id="odooFieldMap" class="codebox short" spellcheck="false" placeholder='{"x_studio_course":"course","x_studio_branch":"branch"}'></textarea></label>
+            <p class="help">For your Logic Odoo module, use model <code>leads.logic</code>. Name, mobile, email, preferred course and website source are mapped automatically. Custom mapping is only needed for extra fields.</p>
+          </div>
+          <div id="webhookFields" class="integration-mode-fields hidden">
+            <label>Webhook URL<input id="crmWebhookUrl" placeholder="https://YOUR-ODOO-DOMAIN/api/wp/callback"></label>
+            <label>Bearer secret (optional)<input id="crmWebhookSecret" type="password" autocomplete="new-password" placeholder="Leave blank to keep saved secret"></label>
+          </div>
+          <div id="integrationStatus" class="integration-status">Not tested yet.</div>
+        </article>
+        <article class="panel">
+          <h3>How lead delivery works</h3>
+          <div class="integration-flow"><div><b>1</b><span>Visitor submits a website form</span></div><div><b>2</b><span>Lead is saved locally in Leads & Forms</span></div><div><b>3</b><span>The server sends the same lead directly to Odoo / webhook</span></div><div><b>4</b><span>Sync success or error is recorded below</span></div></div>
+          <div class="security-callout"><b>Credentials stay server-side.</b><p>The Odoo API key and webhook secret are stored in <code>data/integrations.json</code> and are never returned through the public website settings API.</p></div>
+        </article>
+      </div>
+      <article class="panel integration-log-panel"><div class="panel-head"><div><span class="kicker">SYNC LOG</span><h3>Recent CRM activity</h3></div><button id="refreshIntegrationLog" class="link-btn">Refresh</button></div><div id="integrationLog" class="integration-log"></div></article>
+    </section>
+
+
+    <section id="section-tracking" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">MEASUREMENT</span><h2>Tracking & Analytics</h2><p>Manage Google Tag Manager, Google Analytics 4 and Meta Pixel globally. The server injects the official tracking snippets into every public page automatically.</p></div><button id="saveTracking" class="primary">Save Tracking</button></div>
+      <div class="panel-grid two tracking-grid">
+        <article class="panel">
+          <h3>Global tracking</h3>
+          <label class="toggle-row"><input id="trackingEnabled" type="checkbox"><span>Enable website tracking</span></label>
+          <p class="help">Keep this master switch off while testing IDs. Tracking code is added only when this switch and the relevant provider are enabled.</p>
+          <div class="tracking-status-card"><b>Automatic conversion events</b><p>No name, phone number or email address is sent to analytics. Events contain only non-personal context such as course, page, branch and form type.</p></div>
+          <label class="toggle-row"><input id="trackingConversions" type="checkbox"><span>Track lead & conversion events</span></label>
+          <label class="toggle-row"><input id="trackingContactClicks" type="checkbox"><span>Track WhatsApp and phone clicks</span></label>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="kicker">GOOGLE</span><h3>Google Tag Manager</h3></div><span class="tracking-provider-badge">GTM</span></div>
+          <label class="toggle-row"><input id="gtmEnabled" type="checkbox"><span>Enable Google Tag Manager</span></label>
+          <label>Container ID<input id="gtmId" placeholder="GTM-XXXXXXX" autocomplete="off"></label>
+          <p class="help">Paste only the GTM container ID. The &lt;head&gt; script and &lt;body&gt; noscript iframe are inserted automatically on every public page.</p>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="kicker">GOOGLE</span><h3>Google Analytics 4</h3></div><span class="tracking-provider-badge">GA4</span></div>
+          <label class="toggle-row"><input id="ga4Enabled" type="checkbox"><span>Enable direct GA4 tracking</span></label>
+          <label>Measurement ID<input id="ga4Id" placeholder="G-XXXXXXXXXX" autocomplete="off"></label>
+          <p class="help">Use this when you want GA4 loaded directly by the website. If the same GA4 property is already configured inside GTM, disable this direct GA4 option to avoid duplicate events.</p>
+        </article>
+        <article class="panel">
+          <div class="panel-head"><div><span class="kicker">META</span><h3>Meta Pixel</h3></div><span class="tracking-provider-badge">PIXEL</span></div>
+          <label class="toggle-row"><input id="metaEnabled" type="checkbox"><span>Enable Meta Pixel</span></label>
+          <label>Pixel ID<input id="metaPixelId" placeholder="123456789012345" inputmode="numeric" autocomplete="off"></label>
+          <p class="help">The base Pixel and PageView event are added automatically. Lead, brochure, career-test and contact actions are sent as conversion/custom events.</p>
+        </article>
+      </div>
+      <article class="panel tracking-event-panel">
+        <div class="panel-head"><div><span class="kicker">EVENTS</span><h3>Events already wired into the website</h3></div><span id="trackingSaveStatus" class="integration-status">Not saved in this session.</span></div>
+        <div class="tracking-event-list"><span>lead_submit</span><span>course_enquiry</span><span>contact_submit</span><span>placement_assistance_submit</span><span>brochure_lead</span><span>brochure_download</span><span>career_test_complete</span><span>newsletter_subscribe</span><span>whatsapp_click</span><span>call_click</span><span>testimonial_video_open</span></div>
+        <div class="security-callout"><b>Important:</b><p>GTM is a container, while GA4 and Meta Pixel are tracking destinations. You may enable all three here, but do not also install the same GA4 or Meta Pixel again inside GTM unless you intentionally want duplicate tracking.</p></div>
+      </article>
+    </section>
+
+<section id="section-leads" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">FORM SUBMISSIONS</span><h2>Leads & enquiries</h2><p>Website enquiry, contact and newsletter submissions are stored here.</p></div><div class="action-row"><a class="secondary button-link" href="/api/admin/leads.csv" download>Export CSV</a><button id="clearLeads" class="danger">Clear All</button></div></div>
+      <div class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Date</th><th>Type</th><th>Name</th><th>Phone</th><th>Email</th><th>Course</th><th>Branch</th><th>Source/Page</th></tr></thead><tbody id="leadsBody"></tbody></table></div></div>
+    </section>
+
+    <section id="section-developer" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">ADVANCED CONTROL</span><h2>Developer editor</h2><p>Edit core CSS, JavaScript, config, sitemap and robots files. Automatic backups are created before saving.</p></div><button id="saveDevFile" class="primary">Save File</button></div>
+      <div class="panel">
+        <label>File<select id="devFileSelect"><option value="assets/styles.css">assets/styles.css</option><option value="assets/site.js">assets/site.js</option><option value="assets/config.js">assets/config.js</option><option value="sitemap.xml">sitemap.xml</option><option value="robots.txt">robots.txt</option></select></label>
+        <textarea id="devEditor" class="codebox giant" spellcheck="false"></textarea>
+      </div>
+      <div class="panel backup-panel"><div class="panel-head"><div><span class="kicker">RECOVERY</span><h3>Recent backups</h3></div><button id="refreshBackups" class="link-btn">Refresh</button></div><div id="backupList" class="backup-list"></div></div>
+    </section>
+
+    <section id="section-security" class="admin-section">
+      <div class="section-intro"><div><span class="kicker">ADMIN ACCESS</span><h2>Security</h2><p>Change the admin password before publishing the website to a public server.</p></div></div>
+      <article class="panel security-card">
+        <h3>Change admin password</h3>
+        <form id="passwordForm">
+          <label>Current password<input name="currentPassword" type="password" required></label>
+          <label>New password<input name="newPassword" type="password" minlength="10" required></label>
+          <label>Confirm new password<input name="confirmPassword" type="password" minlength="10" required></label>
+          <button class="primary" type="submit">Change password</button><span id="passwordStatus"></span>
+        </form>
+      </article>
+    </section>
+  </main>
+</div>
+
+<div id="mediaModal" class="modal hidden"><div class="modal-card"><div class="modal-head"><h2>Choose Media</h2><button id="closeMediaModal">×</button></div><div class="modal-actions"><input id="modalUpload" type="file" accept="image/*" hidden><button id="modalUploadBtn" class="secondary">Upload new image</button></div><div id="modalMediaGrid" class="media-grid modal-grid"></div></div></div>
+
+<script src="admin.js"></script>
+</body>
+</html>
