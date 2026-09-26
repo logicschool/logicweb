@@ -1,27 +1,6 @@
 
 (()=>{
   const root=window.LOGIC_ROOT||'';
-  const trackingConfig=window.LOGIC_TRACKING||{};
-  function logicTrack(eventName,params={}){
-    if(!trackingConfig.enabled||!eventName)return;
-    const contactEvent=eventName==='whatsapp_click'||eventName==='call_click';
-    if(contactEvent&&trackingConfig.trackContactClicks===false)return;
-    if(!contactEvent&&trackingConfig.trackConversions===false)return;
-    const clean={};
-    for(const [k,v] of Object.entries(params||{})){
-      if(v==null||v==='')continue;
-      if(['string','number','boolean'].includes(typeof v))clean[k]=v;
-    }
-    window.dataLayer=window.dataLayer||[];
-    window.dataLayer.push({event:eventName,...clean});
-    if(typeof window.gtag==='function')window.gtag('event',eventName,clean);
-    if(typeof window.fbq==='function'){
-      if(eventName==='lead_submit'||eventName==='brochure_lead')window.fbq('track','Lead',clean);
-      else if(eventName==='newsletter_subscribe')window.fbq('track','CompleteRegistration',clean);
-      else window.fbq('trackCustom',eventName,clean);
-    }
-  }
-  window.logicTrack=logicTrack;
 
 
   const motionDefaults={enabled:true,respectReducedMotion:true,once:true,preset:'fade-up',duration:480,delay:0,distance:14,stagger:45,threshold:.05,easing:'cubic-bezier(0.22, 1, 0.36, 1)',autoSections:false,autoCards:true,autoText:false,autoImages:false,autoButtons:false,customSelectors:'',smoothScroll:true,cardHover:true,imageHover:true,buttonHover:true,premiumSpotlight:true,magneticButtons:true,countUp:true,scrollProgress:true,heroParallax:true};
@@ -159,10 +138,7 @@
       try{
         const res=await fetch(root+'api/brochure/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({}));if(!res.ok||!data.ok)throw new Error(data.error||'Could not prepare the brochure');
         status.textContent='Thank you. Your brochure is downloading…';
-        const eventData={course:payload.course||ctx.course||'All Courses',brochure_kind:payload.kind||'master',source:'Website Brochure',page:location.pathname};
-        logicTrack('brochure_lead',eventData);
         const a=document.createElement('a');a.href=root+String(data.downloadUrl||'');a.style.display='none';document.body.appendChild(a);a.click();a.remove();
-        logicTrack('brochure_download',eventData);
         form.reset();setTimeout(close,850);
       }catch(err){status.textContent=err.message||'Could not download right now. Please try again.';status.classList.add('is-error')}finally{btn.disabled=false}
     });
@@ -198,7 +174,7 @@
         document.querySelectorAll('.brand').forEach(a=>{a.classList.add('has-logo');a.innerHTML=`<img class="site-logo" src="${s.logoUrl}" alt="${s.siteName||'Logic School of Management'}">`;});
       }
       if(s.faviconUrl){let icon=document.querySelector('link[rel="icon"]');if(!icon){icon=document.createElement('link');icon.rel='icon';document.head.appendChild(icon)}icon.href=s.faviconUrl;}
-      if(s.phone){document.querySelectorAll('a[href^="tel:"]').forEach(a=>{a.href='tel:'+String(s.phone).replace(/[^+\d]/g,'');a.textContent=s.phone;});}
+      if(s.phone){document.querySelectorAll('a[href^="tel:"]').forEach(a=>{if(a.closest('.branch-card,.middle-east-card'))return;a.href='tel:'+String(s.phone).replace(/[^+\d]/g,'');a.textContent=s.phone;});}
       if(s.email){document.querySelectorAll('a[href^="mailto:"]').forEach(a=>{a.href='mailto:'+s.email;a.textContent=s.email;});}
       if(s.whatsapp){const num=String(s.whatsapp).replace(/\D/g,'');document.querySelectorAll('a[href*="wa.me/"]').forEach(a=>{const old=a.getAttribute('href')||'';const q=old.includes('?')?old.slice(old.indexOf('?')):'';a.href='https://wa.me/'+num+q;});}
       if(s.address){document.querySelectorAll('.footer-grid>div:last-child>p').forEach(p=>p.textContent=s.address);}
@@ -289,7 +265,7 @@
   // v6: YouTube testimonial modal
   const youtubeId=url=>{try{const u=new URL(url,location.href);if(u.hostname.includes('youtu.be'))return u.pathname.split('/').filter(Boolean)[0]||'';if(u.hostname.includes('youtube.com')){if(u.searchParams.get('v'))return u.searchParams.get('v');const parts=u.pathname.split('/').filter(Boolean);const idx=parts.findIndex(x=>['embed','shorts','live'].includes(x));if(idx>=0&&parts[idx+1])return parts[idx+1]}return ''}catch(e){return ''}};
   function ensureVideoModal(){let m=document.querySelector('.video-modal');if(m)return m;m=document.createElement('div');m.className='video-modal';m.innerHTML='<div class="video-modal-shell"><button class="video-modal-close" type="button" aria-label="Close video">×</button><iframe title="YouTube video testimonial" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>';document.body.appendChild(m);const close=()=>{m.classList.remove('open');m.querySelector('iframe').src='';document.body.style.overflow=''};m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.video-modal-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});return m}
-  document.addEventListener('click',e=>{const link=e.target.closest('[data-youtube-modal]');if(!link)return;const id=youtubeId(link.href);if(!id)return;e.preventDefault();logicTrack('testimonial_video_open',{video_id:id,page:location.pathname});const m=ensureVideoModal();m.querySelector('iframe').src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&rel=0';m.classList.add('open');document.body.style.overflow='hidden'});
+  document.addEventListener('click',e=>{const link=e.target.closest('[data-youtube-modal]');if(!link)return;const id=youtubeId(link.href);if(!id)return;e.preventDefault();const m=ensureVideoModal();m.querySelector('iframe').src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&rel=0';m.classList.add('open');document.body.style.overflow='hidden'});
 
   // v6: result-poster lightbox
   function ensureImageLightbox(){let m=document.querySelector('.image-lightbox');if(m)return m;m=document.createElement('div');m.className='image-lightbox';m.innerHTML='<button class="image-lightbox-close" type="button" aria-label="Close image">×</button><img alt="Expanded result poster">';document.body.appendChild(m);const close=()=>{m.classList.remove('open');m.querySelector('img').src='';document.body.style.overflow=''};m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.image-lightbox-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});return m}
@@ -303,7 +279,7 @@
     next?.addEventListener('click',()=>{if(valid())show(index+1)});prev?.addEventListener('click',()=>show(index-1));
     form.querySelector('[data-career-reset]')?.addEventListener('click',()=>{form.reset();show(0);result.hidden=true;form.hidden=false});
     const restart=()=>{form.reset();form.hidden=false;result.hidden=true;show(0)};document.querySelector('[data-career-restart]')?.addEventListener('click',restart);
-    form.addEventListener('submit',async e=>{e.preventDefault();if(!valid())return;const fd=new FormData(form);let india=0,global=0;['examStyle','recognition','careerMarket','earning','budget','motivation'].forEach(k=>{const v=fd.get(k);if(v==='india')india++;if(v==='global')global++});const direction=global>india?'global':india>global?'india':'balanced';const title=direction==='global'?'International Professional Course Pathway':direction==='india'?'India-Focused Professional Course Pathway':'Balanced Professional Course Pathway';const copy=direction==='global'?'Your answers lean toward international recognition, modular study flexibility and global or multinational career environments.':direction==='india'?'Your answers lean toward India-focused professional recognition, structured progression and local career or practice opportunities.':'Your preferences are evenly split between India-focused and international pathways. A side-by-side course comparison will be more useful than forcing one direction.';const courses=direction==='global'?['ACCA','CMA USA','EA / CIAP to explore']:direction==='india'?['CA','CMA India','Skill programmes to complement your path']:['CA / CMA India','ACCA / CMA USA','Compare with a counsellor'];result.querySelector('[data-career-result-title]').textContent=title;result.querySelector('[data-career-result-copy]').textContent=copy;result.querySelector('[data-career-result-courses]').innerHTML=courses.map(x=>'<span>'+x+'</span>').join('');form.hidden=true;result.hidden=false;result.scrollIntoView({behavior:'smooth',block:'center'});const payload=Object.fromEntries(fd.entries());payload.formType='Career Test';payload.recommendation=title;payload.indiaScore=india;payload.globalScore=global;payload.page=location.pathname;payload.submittedAt=new Date().toISOString();logicTrack('career_test_complete',{recommendation:title,pathway:direction,page:location.pathname,source:'Website Career Test'});try{if(location.protocol.startsWith('http')){const r=await fetch(root+'api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(r.ok)logicTrack('lead_submit',{form_type:'career_test',recommendation:title,page:location.pathname,source:'Website Career Test'})}}catch(e){} });
+    form.addEventListener('submit',async e=>{e.preventDefault();if(!valid())return;const fd=new FormData(form);let india=0,global=0;['examStyle','recognition','careerMarket','earning','budget','motivation'].forEach(k=>{const v=fd.get(k);if(v==='india')india++;if(v==='global')global++});const direction=global>india?'global':india>global?'india':'balanced';const title=direction==='global'?'International Professional Course Pathway':direction==='india'?'India-Focused Professional Course Pathway':'Balanced Professional Course Pathway';const copy=direction==='global'?'Your answers lean toward international recognition, modular study flexibility and global or multinational career environments.':direction==='india'?'Your answers lean toward India-focused professional recognition, structured progression and local career or practice opportunities.':'Your preferences are evenly split between India-focused and international pathways. A side-by-side course comparison will be more useful than forcing one direction.';const courses=direction==='global'?['ACCA','CMA USA','EA / CIAP to explore']:direction==='india'?['CA','CMA India','Skill programmes to complement your path']:['CA / CMA India','ACCA / CMA USA','Compare with a counsellor'];result.querySelector('[data-career-result-title]').textContent=title;result.querySelector('[data-career-result-copy]').textContent=copy;result.querySelector('[data-career-result-courses]').innerHTML=courses.map(x=>'<span>'+x+'</span>').join('');form.hidden=true;result.hidden=false;result.scrollIntoView({behavior:'smooth',block:'center'});const payload=Object.fromEntries(fd.entries());payload.formType='Career Test';payload.recommendation=title;payload.indiaScore=india;payload.globalScore=global;payload.page=location.pathname;payload.submittedAt=new Date().toISOString();try{if(location.protocol.startsWith('http'))await fetch(root+'api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})}catch(e){} });
     show(0);
   });
 
@@ -316,20 +292,9 @@
     try{
       if(endpoint){const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!res.ok)throw new Error('Request failed');}
       else{const key='logic_'+kind+'_submissions';const saved=JSON.parse(localStorage.getItem(key)||'[]');saved.push(data);localStorage.setItem(key,JSON.stringify(saved));}
-      const eventData={form_type:kind,course:data.course||'',branch:data.branch||'',page:location.pathname,source:data.source||''};
-      if(kind==='newsletter'){logicTrack('newsletter_subscribe',{page:location.pathname,source:'Website Newsletter'});if(status)status.textContent='Subscribed. Thank you!';form.reset();return;}
-      logicTrack('lead_submit',eventData);
-      if(location.pathname.includes('placement-assistance'))logicTrack('placement_assistance_submit',{...eventData,source:'Website Placement Assistance'});
-      else if(kind==='contact')logicTrack('contact_submit',eventData);
-      else if(kind==='enquiry')logicTrack('course_enquiry',eventData);
-      setTimeout(()=>{location.href=root+'thank-you.html'},120);
+      if(kind==='newsletter'){if(status)status.textContent='Subscribed. Thank you!';form.reset();return;}
+      location.href=root+'thank-you.html';
     }catch(err){if(status){status.textContent='Could not submit right now. Please call or WhatsApp admissions.';status.style.color='#b42318';}}
   }
-  document.addEventListener('click',e=>{
-    if(trackingConfig.trackContactClicks===false)return;
-    const a=e.target.closest('a[href]');if(!a)return;const href=String(a.getAttribute('href')||'');
-    if(/(?:wa\.me\/|api\.whatsapp\.com|whatsapp:\/\/)/i.test(href))logicTrack('whatsapp_click',{page:location.pathname,link_location:a.closest('header')?'header':a.closest('footer')?'footer':'content'});
-    else if(/^tel:/i.test(href))logicTrack('call_click',{page:location.pathname,link_location:a.closest('header')?'header':a.closest('footer')?'footer':'content'});
-  },{passive:true});
   document.querySelectorAll('form[data-form]').forEach(f=>f.addEventListener('submit',e=>{e.preventDefault();submitForm(f)}));
 })();
