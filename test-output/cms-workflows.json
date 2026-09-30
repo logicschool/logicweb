@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "widths": [
+    1440,
+    768,
+    390,
+    360
+  ],
+  "workflows": [
+    "programme selection and persistence",
+    "global header/footer save across routes",
+    "poster upload and publish",
+    "result category navigation",
+    "category banner",
+    "mobile poster update and delete",
+    "poster lightbox"
+  ],
+  "errors": [],
+  "overflows": []
+}

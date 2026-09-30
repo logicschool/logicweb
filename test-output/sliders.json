@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "widths": [
+    1440,
+    768,
+    390,
+    360
+  ],
+  "routes": [
+    "/results.html",
+    "/results/ca.html",
+    "/placements.html"
+  ],
+  "checks": [
+    "two opposite directions",
+    "seamless group geometry",
+    "unique records and drafts",
+    "pause/play",
+    "category link navigation",
+    "poster lightbox and keyboard",
+    "reduced motion and global animation switch",
+    "Page Editor unchanged",
+    "one and zero poster states"
+  ],
+  "errors": []
+}

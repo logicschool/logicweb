@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "widths": [
+    1440,
+    390
+  ],
+  "routes": [
+    "/",
+    "/courses/ca.html",
+    "/results/ca.html",
+    "/blog/ca-foundation-roadmap.html"
+  ],
+  "checks": [
+    "existing logo fallback",
+    "header-only update",
+    "footer-only update",
+    "browser hydration retains both logos",
+    "saved fields survive reload",
+    "clear footer restores fallback",
+    "global branding/tracking/brochures preserved"
+  ],
+  "errors": []
+}

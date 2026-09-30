@@ -1,0 +1,17 @@
+CREATE TABLE IF NOT EXISTS schema_migrations (version text PRIMARY KEY, applied_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS global_settings (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS admin_users (username text PRIMARY KEY, password_hash text NOT NULL, totp_secret text, recovery_codes jsonb NOT NULL DEFAULT '[]', last_totp_step bigint NOT NULL DEFAULT -1, session_version integer NOT NULL DEFAULT 1, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS blog_posts (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE UNIQUE INDEX IF NOT EXISTS blog_slug ON blog_posts ((data->>'slug'));
+CREATE TABLE IF NOT EXISTS result_categories (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS results (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS results_category ON results ((data->>'categoryId'));
+CREATE TABLE IF NOT EXISTS programs (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS branches (id text PRIMARY KEY, data jsonb NOT NULL, updated_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS contact_submissions (id uuid PRIMARY KEY, kind text NOT NULL, data jsonb NOT NULL, dedup_key text NOT NULL, received_at timestamptz NOT NULL DEFAULT now(), crm_status text NOT NULL DEFAULT 'pending', crm_error text);
+CREATE INDEX IF NOT EXISTS submission_dedup ON contact_submissions(dedup_key, received_at);
+CREATE TABLE IF NOT EXISTS media_files (id uuid PRIMARY KEY, url text UNIQUE NOT NULL, name text NOT NULL, mime_type text NOT NULL, bytes bigint NOT NULL, created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS session (sid varchar PRIMARY KEY, sess json NOT NULL, expire timestamp(6) NOT NULL);
+CREATE INDEX IF NOT EXISTS session_expire ON session(expire);
+INSERT INTO schema_migrations(version) VALUES ('001') ON CONFLICT DO NOTHING;
+CREATE TABLE IF NOT EXISTS form_dedup_keys (key text PRIMARY KEY, expires_at timestamptz NOT NULL);

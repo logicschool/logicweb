@@ -5,6 +5,8 @@ const url = require('url');
 const crypto = require('crypto');
 
 const ROOT = __dirname;
+let databaseSettings=null;
+const renderService=require('./server/services/render');
 const PORT = Number(process.env.PORT || 8080);
 const DATA_DIR = path.join(ROOT, 'data');
 const UPLOAD_DIR = path.join(ROOT, 'uploads');
@@ -53,14 +55,7 @@ function parseCookies(req) {
   });
   return out;
 }
-function sessionFor(req) {
-  const token = parseCookies(req).logic_admin_session;
-  const s = token && sessions.get(token);
-  if (!s) return null;
-  if (Date.now() > s.expiresAt) { sessions.delete(token); return null; }
-  s.expiresAt = Date.now() + SESSION_TTL;
-  return { token, ...s };
-}
+function sessionFor(req) { return req.adminUser ? {username:req.adminUser.username} : null; }
 function requireAdmin(req, res) {
   const s = sessionFor(req);
   if (!s) { json(res, 401, { ok: false, error: 'Authentication required' }); return null; }
@@ -75,43 +70,22 @@ function readBody(req, max = MAX_JSON) {
   });
 }
 async function readJson(req, max = MAX_JSON) {
+  if(req.body!==undefined)return req.body;
   const body = await readBody(req, max);
   return JSON.parse(body || '{}');
 }
 function safeReadJson(file, fallback) {
+  if(file===SETTINGS_FILE && databaseSettings)return databaseSettings;
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; }
 }
 function atomicWrite(file, content) {
   const tmp = file + '.tmp'; fs.writeFileSync(tmp, content); fs.renameSync(tmp, file);
 }
-function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
-  const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
-  return { salt, hash };
-}
-function ensureAuth() {
-  if (fs.existsSync(AUTH_FILE)) return;
-  const username = 'admin';
-  const password = 'LogicAdmin@2026';
-  const { salt, hash } = hashPassword(password);
-  atomicWrite(AUTH_FILE, JSON.stringify({ username, salt, hash, createdAt: new Date().toISOString() }, null, 2));
-}
-function verifyPassword(username, password) {
-  ensureAuth();
-  const auth = safeReadJson(AUTH_FILE, {});
-  if (String(username) !== String(auth.username)) return false;
-  const actual = crypto.scryptSync(String(password), auth.salt, 64);
-  const expected = Buffer.from(auth.hash || '', 'hex');
-  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
-}
-function updatePassword(username, newPassword) {
-  const { salt, hash } = hashPassword(newPassword);
-  atomicWrite(AUTH_FILE, JSON.stringify({ username, salt, hash, updatedAt: new Date().toISOString() }, null, 2));
-}
 function listPages() {
   const pages = [];
   function walk(dir, rel = '') {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (['admin', 'data', 'uploads', 'node_modules'].includes(entry.name)) continue;
+      if (['admin', 'data', 'uploads', 'node_modules','partials','server','test','scripts','blog'].includes(entry.name)) continue;
       const abs = path.join(dir, entry.name); const r = path.posix.join(rel, entry.name);
       if (entry.isDirectory()) walk(abs, r);
       else if (entry.isFile() && entry.name.endsWith('.html')) {
@@ -126,7 +100,7 @@ function listPages() {
 }
 function safePagePath(p) {
   p = String(p || '').replace(/^\/+/, '').replace(/\\/g, '/');
-  if (!p.endsWith('.html') || p.startsWith('admin/') || p.startsWith('data/') || p.includes('../')) return null;
+  if (!p.endsWith('.html') || !/^(?:[a-z0-9-]+\/)*[a-z0-9-]+\.html$/i.test(p) || /^(admin|data|server|partials|node_modules|test|scripts)\//.test(p) || p.includes('../')) return null;
   const abs = path.resolve(ROOT, p);
   if (!abs.startsWith(ROOT + path.sep)) return null;
   return { abs, rel: p };
@@ -155,7 +129,7 @@ function mediaFiles() {
   const addDir = (dir, urlBase, managed) => {
     if (!fs.existsSync(dir)) return;
     for (const n of fs.readdirSync(dir)) {
-      const abs = path.join(dir, n); if (!fs.statSync(abs).isFile()) continue;
+      const abs = path.join(dir, n); if(fs.statSync(abs).isDirectory()){if(n!=='brochures')addDir(abs,urlBase+'/'+n,managed);continue;} if (!fs.statSync(abs).isFile()) continue;
       if (!allowedExt.has(path.extname(n).toLowerCase())) continue;
       const st = fs.statSync(abs);
       files.push({ name:n, url:`${urlBase}/${encodeURIComponent(n)}`, managed, bytes:st.size, modified:st.mtime.toISOString() });
@@ -163,6 +137,7 @@ function mediaFiles() {
   };
   addDir(UPLOAD_DIR, '/uploads', true);
   addDir(path.join(ROOT, 'assets', 'images'), '/assets/images', true);
+  addDir(path.join(ROOT,'assets','course-icons'),'/assets/course-icons',true);
   return files.sort((a,b)=>b.modified.localeCompare(a.modified));
 }
 function saveLead(kind, data) {
@@ -257,7 +232,7 @@ function injectTrackingIntoHtml(html) {
 function integrationDefaults() {
   return { enabled:false, mode:'disabled', baseUrl:'', database:'', username:'', apiKey:'', model:'leads.logic', customFieldMap:'', webhookUrl:'', webhookSecret:'' };
 }
-function readIntegrations() { return { ...integrationDefaults(), ...safeReadJson(INTEGRATIONS_FILE,{}) }; }
+function readIntegrations() { return { ...integrationDefaults(), ...safeReadJson(INTEGRATIONS_FILE,{}), ...(process.env.ODOO_API_KEY?{apiKey:process.env.ODOO_API_KEY}:{}), ...(process.env.CRM_WEBHOOK_SECRET?{webhookSecret:process.env.CRM_WEBHOOK_SECRET}:{}) }; }
 function adminIntegrationView() {
   const x=readIntegrations();
   return { ...x, apiKey:'', webhookSecret:'', apiKeyConfigured:!!x.apiKey, webhookSecretConfigured:!!x.webhookSecret };
@@ -454,108 +429,26 @@ function serveFile(res, file, status=200, injectTracking=true) {
 }
 function safeTextFilePath(p) {
   p = String(p || '').replace(/^\/+/, '').replace(/\\/g,'/');
-  const allowed = ['assets/styles.css','assets/site.js','assets/config.js','robots.txt','sitemap.xml'];
+  const allowed = ['partials/header.html','partials/footer.html','assets/styles.css','assets/site.js','assets/config.js','robots.txt','sitemap.xml'];
   if (!allowed.includes(p)) return null;
   return { rel:p, abs:path.join(ROOT,p) };
 }
 
-ensureAuth();
 if (!fs.existsSync(INTEGRATIONS_FILE)) atomicWrite(INTEGRATIONS_FILE, JSON.stringify(integrationDefaults(), null, 2));
 if (!fs.existsSync(SETTINGS_FILE)) atomicWrite(SETTINGS_FILE, JSON.stringify({ siteName:'Logic School of Management' }, null, 2));
 
-const server = http.createServer(async (req, res) => {
-  const u = url.parse(req.url, true);
+const legacyHandler = async (req, res) => {
+  const parsed = new URL(req.url,'http://localhost');
+  const u={query:Object.fromEntries(parsed.searchParams),pathname:parsed.pathname};
   const pathname = decodeURIComponent(u.pathname);
 
-  // Lead-gated brochure downloads. The brochure URL is not exposed through public settings.
-  if (req.method === 'POST' && pathname === '/api/brochure/request') {
-    try {
-      const data=await readJson(req,1024*1024);
-      const name=String(data.name||'').trim(), phone=String(data.phone||'').trim(), email=String(data.email||'').trim();
-      const kind=String(data.kind||'').trim();
-      if(name.length<2) return json(res,400,{ok:false,error:'Please enter your name'});
-      if(!phone.replace(/\D/g,'').match(/\d{7,}/)) return json(res,400,{ok:false,error:'Please enter a valid phone number'});
-      const cfg=brochureConfigForKind(kind);
-      if(!cfg||!cfg.enabled||!String(cfg.url||'').trim()) return json(res,404,{ok:false,error:'This brochure is not available right now'});
-      const lead={
-        name,phone,email,
-        course:String(data.course||'').trim()||(kind==='master'?'All Courses':kind),
-        source:'Website Brochure',formType:'Brochure Download',
-        brochureKind:kind,brochureLabel:String(cfg.label||'Download Brochure'),
-        page:String(data.page||''),consent:!!data.consent,submittedAt:new Date().toISOString()
-      };
-      saveLead('brochure',lead);
-      syncLeadToCrm('brochure',lead).catch(e=>console.error('CRM sync failed:',e.message));
-      const token=createBrochureDownloadToken(cfg.url);
-      return json(res,200,{ok:true,downloadUrl:'api/brochure/download?token='+encodeURIComponent(token)});
-    } catch(e) { return json(res,400,{ok:false,error:e.message||'Could not prepare brochure download'}); }
-  }
-  if (req.method === 'GET' && pathname === '/api/brochure/download') return serveBrochureDownload(res,u.query.token);
-
-  // Public form APIs
-  if (req.method === 'POST' && ['/api/enquiry','/api/contact','/api/newsletter'].includes(pathname)) {
-    try {
-      const data = await readJson(req, 1024*1024);
-      const kind = pathname.split('/').pop();
-      if (kind !== 'newsletter' && !String(data.phone || '').replace(/\D/g,'').match(/\d{7,}/)) return json(res,400,{ok:false,error:'Valid phone required'});
-      const normalized={...data,source:crmSourceForLead(kind,data)};
-      saveLead(kind, normalized);
-      if(kind!=='newsletter') syncLeadToCrm(kind,normalized).catch(e=>console.error('CRM sync failed:',e.message));
-      return json(res,200,{ok:true});
-    } catch { return json(res,400,{ok:false,error:'Invalid request'}); }
-  }
-
-  if (req.method === 'GET' && pathname === '/api/public/settings') {
-    return json(res,200,{ok:true,settings:safeReadJson(SETTINGS_FILE,{})});
-  }
-  if (req.method === 'GET' && pathname === '/api/public/brochures') {
-    return json(res,200,{ok:true,brochures:publicBrochureView()});
-  }
-
-  // Admin auth
-  if (req.method === 'GET' && pathname === '/api/admin/session') {
-    const s = sessionFor(req); return json(res,200,{ok:true,authenticated:!!s,user:s?.username||null});
-  }
-  if (req.method === 'POST' && pathname === '/api/admin/login') {
-    const ip = req.socket.remoteAddress || 'local';
-    const rec = loginAttempts.get(ip) || { count:0, reset:Date.now()+10*60*1000 };
-    if (Date.now() > rec.reset) { rec.count=0; rec.reset=Date.now()+10*60*1000; }
-    if (rec.count >= 10) return json(res,429,{ok:false,error:'Too many login attempts. Try again later.'});
-    try {
-      const data = await readJson(req, 100*1024);
-      if (!verifyPassword(data.username, data.password)) { rec.count++; loginAttempts.set(ip,rec); return json(res,401,{ok:false,error:'Invalid username or password'}); }
-      loginAttempts.delete(ip);
-      const token = crypto.randomBytes(32).toString('hex');
-      sessions.set(token,{username:String(data.username),expiresAt:Date.now()+SESSION_TTL});
-      return json(res,200,{ok:true},{'Set-Cookie':`logic_admin_session=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${SESSION_TTL/1000}`});
-    } catch { return json(res,400,{ok:false,error:'Invalid request'}); }
-  }
-  if (req.method === 'POST' && pathname === '/api/admin/logout') {
-    const s = sessionFor(req); if (s) sessions.delete(s.token);
-    return json(res,200,{ok:true},{'Set-Cookie':'logic_admin_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'});
-  }
-
+  if(req.method==='GET'&&pathname==='/api/brochure/download')return serveBrochureDownload(res,u.query.token);
   if (pathname.startsWith('/api/admin/')) {
     const session = requireAdmin(req,res); if (!session) return;
     try {
       if (req.method === 'GET' && pathname === '/api/admin/dashboard') {
         const pages=listPages(), media=mediaFiles(), leads=readLeads(), backups=listBackups();
         return json(res,200,{ok:true,stats:{pages:pages.length,media:media.length,leads:leads.length,backups:backups.length},recentLeads:leads.slice(0,5)});
-      }
-      if (req.method === 'GET' && pathname === '/api/admin/settings') return json(res,200,{ok:true,settings:safeReadJson(SETTINGS_FILE,{})});
-      if (req.method === 'PUT' && pathname === '/api/admin/settings') {
-        const data=await readJson(req,1024*1024); const current=safeReadJson(SETTINGS_FILE,{});
-        const allowed=['siteName','tagline','logoUrl','faviconUrl','primaryColor','secondaryColor','phone','whatsapp','email','address','facebook','instagram','youtube','linkedin','socialLinks','announcementEnabled','announcementText','announcementLink','customHeadCode','navigation','footerCourses','animations','typography','brochures','tracking'];
-        const next={...current}; for(const k of allowed) if(k in data) next[k]=data[k];
-        if('tracking' in data) next.tracking=normalizeTracking(data.tracking);
-        atomicWrite(SETTINGS_FILE,JSON.stringify(next,null,2)); return json(res,200,{ok:true,settings:next});
-      }
-      if (req.method === 'POST' && pathname === '/api/admin/change-password') {
-        const data=await readJson(req,100*1024);
-        if (!verifyPassword(session.username,data.currentPassword)) return json(res,400,{ok:false,error:'Current password is incorrect'});
-        if (String(data.newPassword||'').length<10) return json(res,400,{ok:false,error:'New password must be at least 10 characters'});
-        updatePassword(session.username,String(data.newPassword)); sessions.clear();
-        return json(res,200,{ok:true,message:'Password changed. Please sign in again.'},{'Set-Cookie':'logic_admin_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0'});
       }
       if (req.method === 'GET' && pathname === '/api/admin/pages') return json(res,200,{ok:true,pages:listPages()});
       if (req.method === 'GET' && pathname === '/api/admin/page') {
@@ -568,7 +461,7 @@ const server = http.createServer(async (req, res) => {
         if(fs.existsSync(p.abs)) return json(res,409,{ok:false,error:'A page with that path already exists'});
         let html='';
         if(data.from){const src=safePagePath(data.from);if(!src||!fs.existsSync(src.abs))return json(res,404,{ok:false,error:'Source page not found'});html=fs.readFileSync(src.abs,'utf8');}
-        else {const depth=p.rel.split('/').length-1, pre='../'.repeat(depth);html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${String(data.title||'New Page').replace(/[<>]/g,'')}</title><link rel="stylesheet" href="${pre}assets/styles.css"><script>window.LOGIC_ROOT='${pre}'</script><script defer src="${pre}assets/config.js"></script><script defer src="${pre}assets/site.js"></script></head><body><main><section class="page-hero"><div class="container"><span class="eyebrow">NEW PAGE</span><h1>${String(data.title||'New Page').replace(/[<>]/g,'')}</h1><p>Edit this page from the Logic CMS visual editor.</p></div></section></main></body></html>`;}
+        else {const depth=p.rel.split('/').length-1, pre='../'.repeat(depth);html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${String(data.title||'New Page').replace(/[<>]/g,'')}</title><link rel="stylesheet" href="${pre}assets/styles.css"><script>window.LOGIC_ROOT='${pre}'</script><script defer src="${pre}assets/config.js"></script><script defer src="${pre}assets/site.js"></script></head><body><!-- SHARED:header --><main><section class="page-hero"><div class="container"><span class="eyebrow">NEW PAGE</span><h1>${String(data.title||'New Page').replace(/[<>]/g,'')}</h1><p>Edit this page from the Logic CMS visual editor.</p></div></section></main><!-- SHARED:footer --></body></html>`;}
         if(data.title) html=html.replace(/<title>[\s\S]*?<\/title>/i,`<title>${String(data.title).replace(/[<>]/g,'')}</title>`);
         fs.mkdirSync(path.dirname(p.abs),{recursive:true});atomicWrite(p.abs,html);return json(res,200,{ok:true,path:p.rel});
       }
@@ -580,13 +473,13 @@ const server = http.createServer(async (req, res) => {
       if (req.method === 'PUT' && pathname === '/api/admin/page') {
         const p=safePagePath(u.query.path); if(!p||!fs.existsSync(p.abs)) return json(res,404,{ok:false,error:'Page not found'});
         const data=await readJson(req,MAX_JSON); if(typeof data.html!=='string'||!data.html.toLowerCase().includes('<html')) return json(res,400,{ok:false,error:'Valid full HTML is required'});
-        const old=fs.readFileSync(p.abs,'utf8'); backupPage(p.rel,old); atomicWrite(p.abs,data.html); return json(res,200,{ok:true,backupCreated:true});
+        const old=fs.readFileSync(p.abs,'utf8'); backupPage(p.rel,old); atomicWrite(p.abs,renderService.normalize(data.html)); return json(res,200,{ok:true,backupCreated:true});
       }
       if (req.method === 'GET' && pathname === '/api/admin/brochures') return json(res,200,{ok:true,files:brochureFiles(),brochures:safeReadJson(SETTINGS_FILE,{}).brochures||{}});
       if (req.method === 'POST' && pathname === '/api/admin/brochure/upload') {
         const data=await readJson(req,MAX_JSON);
         const m=String(data.data||'').match(/^data:application\/pdf;base64,(.+)$/i); if(!m) return json(res,400,{ok:false,error:'Please upload a PDF brochure'});
-        const buf=Buffer.from(m[1],'base64'); if(buf.length>MAX_BROCHURE) return json(res,413,{ok:false,error:'Brochure exceeds 30 MB'});
+        const buf=Buffer.from(m[1],'base64'); if(buf.subarray(0,5).toString()!=='%PDF-')return json(res,400,{ok:false,error:'Invalid PDF'}); if(buf.length>MAX_BROCHURE) return json(res,413,{ok:false,error:'Brochure exceeds 30 MB'});
         let name=String(data.name||'brochure.pdf'); if(path.extname(name).toLowerCase()!=='.pdf') name+='.pdf';
         name=sanitizeFilename(name); const abs=path.join(BROCHURE_DIR,name); fs.writeFileSync(abs,buf);
         return json(res,200,{ok:true,file:{name,url:'/uploads/brochures/'+encodeURIComponent(name),bytes:buf.length,modified:new Date().toISOString()}});
@@ -622,26 +515,12 @@ const server = http.createServer(async (req, res) => {
         return json(res,400,{ok:false,error:'Choose and enable an integration mode first'});
       }
       if (req.method === 'GET' && pathname === '/api/admin/media') return json(res,200,{ok:true,media:mediaFiles()});
-      if (req.method === 'POST' && pathname === '/api/admin/media/upload') {
-        const data=await readJson(req,MAX_JSON);
-        const m=String(data.data||'').match(/^data:([^;]+);base64,(.+)$/); if(!m) return json(res,400,{ok:false,error:'Invalid image data'});
-        const type=m[1].toLowerCase(); const allowedTypes=new Set(['image/jpeg','image/png','image/webp','image/gif','image/svg+xml','image/x-icon']);
-        if(!allowedTypes.has(type)) return json(res,400,{ok:false,error:'Unsupported image type'});
-        const buf=Buffer.from(m[2],'base64'); if(buf.length>MAX_UPLOAD) return json(res,413,{ok:false,error:'Image exceeds 10 MB'});
-        const extByType={'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp','image/gif':'.gif','image/svg+xml':'.svg','image/x-icon':'.ico'};
-        let name=String(data.name||'image'+extByType[type]); if(!path.extname(name)) name+=extByType[type];
-        name=sanitizeFilename(name); const abs=path.join(UPLOAD_DIR,name); fs.writeFileSync(abs,buf);
-        return json(res,200,{ok:true,file:{name,url:'/uploads/'+encodeURIComponent(name),managed:true,bytes:buf.length,modified:new Date().toISOString()}});
-      }
       if (req.method === 'DELETE' && pathname === '/api/admin/media') {
         const target=String(u.query.url||'');
         let abs=null; if(target.startsWith('/uploads/')) abs=path.join(UPLOAD_DIR,path.basename(target)); else if(target.startsWith('/assets/images/')) abs=path.join(ROOT,'assets','images',path.basename(target));
         if(!abs||!fs.existsSync(abs)) return json(res,404,{ok:false,error:'Media not found'});
         fs.unlinkSync(abs); return json(res,200,{ok:true});
       }
-      if (req.method === 'GET' && pathname === '/api/admin/leads') return json(res,200,{ok:true,leads:readLeads()});
-      if (req.method === 'GET' && pathname === '/api/admin/leads.csv') return text(res,200,leadsCsv(),'text/csv; charset=utf-8',{'Content-Disposition':'attachment; filename="logic-leads.csv"'});
-      if (req.method === 'DELETE' && pathname === '/api/admin/leads') { if(fs.existsSync(LEADS_FILE)) fs.unlinkSync(LEADS_FILE); return json(res,200,{ok:true}); }
       if (req.method === 'GET' && pathname === '/api/admin/backups') return json(res,200,{ok:true,backups:listBackups()});
       if (req.method === 'POST' && pathname === '/api/admin/restore-backup') {
         const data=await readJson(req,100*1024); const name=path.basename(String(data.name||'')); const backup=path.join(BACKUP_DIR,name);
@@ -668,21 +547,7 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // Static files. Protect application internals and keep uploaded brochures behind the lead gate.
-  let filePath = pathname === '/' ? '/index.html' : pathname;
-  if (filePath.startsWith('/data/') || ['/server.js','/package.json'].includes(filePath)) return text(res,403,'Forbidden');
-  if (filePath.startsWith('/uploads/brochures/') && !sessionFor(req)) return text(res,403,'Brochure access requires the download form.');
-  let abs = path.resolve(ROOT, '.' + filePath);
-  if (!abs.startsWith(ROOT)) return text(res,403,'Forbidden');
-  try {
-    const st=fs.statSync(abs); if(st.isDirectory()) abs=path.join(abs,'index.html');
-    return serveFile(res,abs,200,!Object.prototype.hasOwnProperty.call(u.query,'cms_edit'));
-  } catch {
-    return serveFile(res,path.join(ROOT,'404.html'),404);
-  }
-});
-
-server.listen(PORT, () => {
-  console.log(`Logic website + CMS running at http://localhost:${PORT}`);
-  console.log(`Admin dashboard: http://localhost:${PORT}/admin/`);
-});
+  return json(res,404,{ok:false,error:'Route not found'});
+};
+module.exports={legacyHandler,injectTrackingIntoHtml,crmSourceForLead,syncLeadToCrm,brochureConfigForKind,createBrochureDownloadToken,publicBrochureView,setSettings:s=>{databaseSettings=s;}};
+if(require.main===module)require('./server/app').start();

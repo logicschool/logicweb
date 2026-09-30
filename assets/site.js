@@ -1,6 +1,27 @@
 
 (()=>{
   const root=window.LOGIC_ROOT||'';
+  const trackingConfig=window.LOGIC_TRACKING||{};
+  function logicTrack(eventName,params={}){
+    if(!trackingConfig.enabled||!eventName)return;
+    const contactEvent=eventName==='whatsapp_click'||eventName==='call_click';
+    if(contactEvent&&trackingConfig.trackContactClicks===false)return;
+    if(!contactEvent&&trackingConfig.trackConversions===false)return;
+    const clean={};
+    for(const [k,v] of Object.entries(params||{})){
+      if(v==null||v==='')continue;
+      if(['string','number','boolean'].includes(typeof v))clean[k]=v;
+    }
+    window.dataLayer=window.dataLayer||[];
+    window.dataLayer.push({event:eventName,...clean});
+    if(typeof window.gtag==='function')window.gtag('event',eventName,clean);
+    if(typeof window.fbq==='function'){
+      if(eventName==='lead_submit'||eventName==='brochure_lead')window.fbq('track','Lead',clean);
+      else if(eventName==='newsletter_subscribe')window.fbq('track','CompleteRegistration',clean);
+      else window.fbq('trackCustom',eventName,clean);
+    }
+  }
+  window.logicTrack=logicTrack;
 
 
   const motionDefaults={enabled:true,respectReducedMotion:true,once:true,preset:'fade-up',duration:480,delay:0,distance:14,stagger:45,threshold:.05,easing:'cubic-bezier(0.22, 1, 0.36, 1)',autoSections:false,autoCards:true,autoText:false,autoImages:false,autoButtons:false,customSelectors:'',smoothScroll:true,cardHover:true,imageHover:true,buttonHover:true,premiumSpotlight:true,magneticButtons:true,countUp:true,scrollProgress:true,heroParallax:true};
@@ -106,6 +127,7 @@
   }
 
   function ensureResourceNavigation(){
+    if(document.querySelector('.site-header[data-layout-managed]'))return;
     const items=[['Blog','/blog.html'],['Testimonials','/testimonials.html'],['Career Test','/career-test.html'],['Placement Assistance','/placement-assistance.html']];
     const path='/' + location.pathname.replace(/^\/+/, '');
     document.querySelectorAll('.desktop-nav').forEach(nav=>{
@@ -138,7 +160,10 @@
       try{
         const res=await fetch(root+'api/brochure/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});const data=await res.json().catch(()=>({}));if(!res.ok||!data.ok)throw new Error(data.error||'Could not prepare the brochure');
         status.textContent='Thank you. Your brochure is downloading…';
+        const eventData={course:payload.course||ctx.course||'All Courses',brochure_kind:payload.kind||'master',source:'Website Brochure',page:location.pathname};
+        logicTrack('brochure_lead',eventData);
         const a=document.createElement('a');a.href=root+String(data.downloadUrl||'');a.style.display='none';document.body.appendChild(a);a.click();a.remove();
+        logicTrack('brochure_download',eventData);
         form.reset();setTimeout(close,850);
       }catch(err){status.textContent=err.message||'Could not download right now. Please try again.';status.classList.add('is-error')}finally{btn.disabled=false}
     });
@@ -164,34 +189,35 @@
     }catch(e){}
   }
 
+  function settingEscape(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   async function applyPublicSettings(){
     try{
       const res=await fetch(root+'api/public/settings',{cache:'no-store'}); if(!res.ok)return;
       const payload=await res.json(), s=payload.settings||{};
       if(s.primaryColor){document.documentElement.style.setProperty('--green',s.primaryColor);document.documentElement.style.setProperty('--green2',s.primaryColor);}
       if(s.secondaryColor) document.documentElement.style.setProperty('--yellow',s.secondaryColor);
-      if(s.logoUrl){
-        document.querySelectorAll('.brand').forEach(a=>{a.classList.add('has-logo');a.innerHTML=`<img class="site-logo" src="${s.logoUrl}" alt="${s.siteName||'Logic School of Management'}">`;});
+      if(s.logoUrl||s.header?.logoUrl||s.footer?.logoUrl){
+        document.querySelectorAll('.brand').forEach(a=>{a.classList.add('has-logo');const image=document.createElement('img');image.className='site-logo';image.src=(a.closest('.footer')?s.footer?.logoUrl:a.closest('.site-header')?s.header?.logoUrl:'')||s.logoUrl||'/assets/favicon.svg';image.alt=s.siteName||'Logic School of Management';a.replaceChildren(image);});
       }
       if(s.faviconUrl){let icon=document.querySelector('link[rel="icon"]');if(!icon){icon=document.createElement('link');icon.rel='icon';document.head.appendChild(icon)}icon.href=s.faviconUrl;}
-      if(s.phone){document.querySelectorAll('a[href^="tel:"]').forEach(a=>{if(a.closest('.branch-card,.middle-east-card'))return;a.href='tel:'+String(s.phone).replace(/[^+\d]/g,'');a.textContent=s.phone;});}
-      if(s.email){document.querySelectorAll('a[href^="mailto:"]').forEach(a=>{a.href='mailto:'+s.email;a.textContent=s.email;});}
+      if(s.phone){document.querySelectorAll('a[data-global-phone]').forEach(a=>{a.href='tel:'+String(s.phone).replace(/[^+\d]/g,'');a.textContent=s.phone;});}
+      if(s.email){document.querySelectorAll('a[data-global-email]').forEach(a=>{a.href='mailto:'+s.email;a.textContent=s.email;});}
       if(s.whatsapp){const num=String(s.whatsapp).replace(/\D/g,'');document.querySelectorAll('a[href*="wa.me/"]').forEach(a=>{const old=a.getAttribute('href')||'';const q=old.includes('?')?old.slice(old.indexOf('?')):'';a.href='https://wa.me/'+num+q;});}
-      if(s.address){document.querySelectorAll('.footer-grid>div:last-child>p').forEach(p=>p.textContent=s.address);}
-      if(s.tagline){document.querySelectorAll('.footer-grid>div:first-child>p').forEach(p=>p.textContent=s.tagline);}
-      if(Array.isArray(s.navigation)&&s.navigation.length){
+      if(s.address&&!document.querySelector('.footer[data-layout-managed]')){document.querySelectorAll('.footer-grid>div:last-child>p').forEach(p=>p.textContent=s.address);}
+      if(s.tagline&&!document.querySelector('.footer[data-layout-managed]')){document.querySelectorAll('.footer-grid>div:first-child>p').forEach(p=>p.textContent=s.tagline);}
+      if(Array.isArray(s.navigation)&&s.navigation.length&&!document.querySelector('.site-header[data-layout-managed]')){
         const current='/' + location.pathname.replace(/^\/+/, '');
-        const navHtml=s.navigation.map(x=>{const active=current===x.url||(x.url==='/courses/index.html'&&current.startsWith('/courses/'));return `<a class="nav-link${active?' active':''}" href="${x.url}">${x.label}</a>`}).join('');
+        const navHtml=s.navigation.map(x=>{const active=current===x.url||(x.url==='/courses/index.html'&&current.startsWith('/courses/'))||(x.url==='/results.html'&&current.startsWith('/results/'))||(x.url==='/blog.html'&&current.startsWith('/blog/'));return `<a class="nav-link${active?' active':''}" href="${settingEscape(x.url)}">${settingEscape(x.label)}</a>`}).join('');
         document.querySelectorAll('.desktop-nav').forEach(n=>n.innerHTML=navHtml);
         document.querySelectorAll('.mobile-nav').forEach(n=>n.innerHTML=navHtml+`<a href="/admissions.html">Apply Now</a><a href="https://wa.me/${String(s.whatsapp||'919895818581').replace(/\D/g,'')}">WhatsApp</a>`);
-        document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>QUICK LINKS</h4>')+s.navigation.filter(x=>x.label!=='Contact').map(x=>`<a href="${x.url}">${x.label}</a>`).join('');});
+        document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>QUICK LINKS</h4>')+s.navigation.filter(x=>x.label!=='Contact').map(x=>`<a href="${settingEscape(x.url)}">${settingEscape(x.label)}</a>`).join('');});
         document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{[['Blog','/blog.html'],['Testimonials','/testimonials.html'],['Career Test','/career-test.html'],['Placement Assistance','/placement-assistance.html']].forEach(([label,url])=>{if(![...col.querySelectorAll('a')].some(a=>a.textContent.trim()===label)){const a=document.createElement('a');a.href=url;a.textContent=label;col.appendChild(a)}})});
         ensureResourceNavigation();
       }
-      if(Array.isArray(s.footerCourses)&&s.footerCourses.length){document.querySelectorAll('.footer-grid>div:nth-child(3)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>COURSES</h4>')+s.footerCourses.map(x=>`<a href="${x.url}">${x.label}</a>`).join('');});}
+      if(Array.isArray(s.footerCourses)&&s.footerCourses.length&&!document.querySelector('.footer[data-layout-managed]')){document.querySelectorAll('.footer-grid>div:nth-child(3)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>COURSES</h4>')+s.footerCourses.map(x=>`<a href="${settingEscape(x.url)}">${settingEscape(x.label)}</a>`).join('');});}
       const fallbackSocials=[{label:'Facebook',url:s.facebook||'',iconUrl:'',fit:'contain'},{label:'Instagram',url:s.instagram||'',iconUrl:'',fit:'contain'},{label:'YouTube',url:s.youtube||'',iconUrl:'',fit:'contain'},{label:'LinkedIn',url:s.linkedin||'',iconUrl:'',fit:'contain'}];
       const socials=(Array.isArray(s.socialLinks)&&s.socialLinks.length?s.socialLinks:fallbackSocials).filter(x=>x&&(x.label||x.url||x.iconUrl));
-      if(socials.length) document.querySelectorAll('.social-row').forEach(row=>{
+      if(socials.length) document.querySelectorAll('.footer:not([data-layout-managed]) .social-row').forEach(row=>{
         row.innerHTML='';socials.forEach(x=>{
           const box=document.createElement(x.url?'a':'span');box.className='social-link-box'+(x.url?'':' is-disabled');if(x.url){box.href=String(x.url);box.target='_blank';box.rel='noopener'}box.setAttribute('aria-label',String(x.label||'Social link'));box.dataset.fit=x.fit==='cover'?'cover':'contain';box.title=String(x.label||'Social link');
           if(x.iconUrl){const img=document.createElement('img');img.className='social-link-image';img.src=String(x.iconUrl);img.alt='';box.appendChild(img)}else{const span=document.createElement('span');const label=String(x.label||'Social').trim(),parts=label.split(/\s+/);span.className='social-link-fallback';span.textContent=(parts.length>1?parts.slice(0,2).map(w=>w[0]).join(''):label.slice(0,2)).toUpperCase();box.appendChild(span)}
@@ -213,6 +239,7 @@
       if(s.secondaryColor)document.documentElement.style.setProperty('--yellow',s.secondaryColor);
     }catch(e){}
   }
+  document.querySelectorAll('[data-layout-managed] .nav-more-button').forEach(btn=>btn.addEventListener('click',()=>{const open=btn.closest('.nav-resource-menu').classList.toggle('open');btn.setAttribute('aria-expanded',String(open));}));
   const cmsEditMode=new URLSearchParams(location.search).has('cms_edit');
   if(!cmsEditMode){applyPublicSettings();applyPublicBrochureSettings();} else applyCmsEditorTypography();
   if(cmsEditMode) ensureResourceNavigation(); else setTimeout(ensureResourceNavigation,250);
@@ -265,7 +292,7 @@
   // v6: YouTube testimonial modal
   const youtubeId=url=>{try{const u=new URL(url,location.href);if(u.hostname.includes('youtu.be'))return u.pathname.split('/').filter(Boolean)[0]||'';if(u.hostname.includes('youtube.com')){if(u.searchParams.get('v'))return u.searchParams.get('v');const parts=u.pathname.split('/').filter(Boolean);const idx=parts.findIndex(x=>['embed','shorts','live'].includes(x));if(idx>=0&&parts[idx+1])return parts[idx+1]}return ''}catch(e){return ''}};
   function ensureVideoModal(){let m=document.querySelector('.video-modal');if(m)return m;m=document.createElement('div');m.className='video-modal';m.innerHTML='<div class="video-modal-shell"><button class="video-modal-close" type="button" aria-label="Close video">×</button><iframe title="YouTube video testimonial" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>';document.body.appendChild(m);const close=()=>{m.classList.remove('open');m.querySelector('iframe').src='';document.body.style.overflow=''};m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.video-modal-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});return m}
-  document.addEventListener('click',e=>{const link=e.target.closest('[data-youtube-modal]');if(!link)return;const id=youtubeId(link.href);if(!id)return;e.preventDefault();const m=ensureVideoModal();m.querySelector('iframe').src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&rel=0';m.classList.add('open');document.body.style.overflow='hidden'});
+  document.addEventListener('click',e=>{const link=e.target.closest('[data-youtube-modal]');if(!link)return;const id=youtubeId(link.href);if(!id)return;e.preventDefault();logicTrack('testimonial_video_open',{video_id:id,page:location.pathname});const m=ensureVideoModal();m.querySelector('iframe').src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&rel=0';m.classList.add('open');document.body.style.overflow='hidden'});
 
   // v6: result-poster lightbox
   function ensureImageLightbox(){let m=document.querySelector('.image-lightbox');if(m)return m;m=document.createElement('div');m.className='image-lightbox';m.innerHTML='<button class="image-lightbox-close" type="button" aria-label="Close image">×</button><img alt="Expanded result poster">';document.body.appendChild(m);const close=()=>{m.classList.remove('open');m.querySelector('img').src='';document.body.style.overflow=''};m.addEventListener('click',e=>{if(e.target===m||e.target.closest('.image-lightbox-close'))close()});addEventListener('keydown',e=>{if(e.key==='Escape'&&m.classList.contains('open'))close()});return m}
@@ -279,22 +306,34 @@
     next?.addEventListener('click',()=>{if(valid())show(index+1)});prev?.addEventListener('click',()=>show(index-1));
     form.querySelector('[data-career-reset]')?.addEventListener('click',()=>{form.reset();show(0);result.hidden=true;form.hidden=false});
     const restart=()=>{form.reset();form.hidden=false;result.hidden=true;show(0)};document.querySelector('[data-career-restart]')?.addEventListener('click',restart);
-    form.addEventListener('submit',async e=>{e.preventDefault();if(!valid())return;const fd=new FormData(form);let india=0,global=0;['examStyle','recognition','careerMarket','earning','budget','motivation'].forEach(k=>{const v=fd.get(k);if(v==='india')india++;if(v==='global')global++});const direction=global>india?'global':india>global?'india':'balanced';const title=direction==='global'?'International Professional Course Pathway':direction==='india'?'India-Focused Professional Course Pathway':'Balanced Professional Course Pathway';const copy=direction==='global'?'Your answers lean toward international recognition, modular study flexibility and global or multinational career environments.':direction==='india'?'Your answers lean toward India-focused professional recognition, structured progression and local career or practice opportunities.':'Your preferences are evenly split between India-focused and international pathways. A side-by-side course comparison will be more useful than forcing one direction.';const courses=direction==='global'?['ACCA','CMA USA','EA / CIAP to explore']:direction==='india'?['CA','CMA India','Skill programmes to complement your path']:['CA / CMA India','ACCA / CMA USA','Compare with a counsellor'];result.querySelector('[data-career-result-title]').textContent=title;result.querySelector('[data-career-result-copy]').textContent=copy;result.querySelector('[data-career-result-courses]').innerHTML=courses.map(x=>'<span>'+x+'</span>').join('');form.hidden=true;result.hidden=false;result.scrollIntoView({behavior:'smooth',block:'center'});const payload=Object.fromEntries(fd.entries());payload.formType='Career Test';payload.recommendation=title;payload.indiaScore=india;payload.globalScore=global;payload.page=location.pathname;payload.submittedAt=new Date().toISOString();try{if(location.protocol.startsWith('http'))await fetch(root+'api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})}catch(e){} });
+    form.addEventListener('submit',async e=>{e.preventDefault();if(!valid())return;const fd=new FormData(form);let india=0,global=0;['examStyle','recognition','careerMarket','earning','budget','motivation'].forEach(k=>{const v=fd.get(k);if(v==='india')india++;if(v==='global')global++});const direction=global>india?'global':india>global?'india':'balanced';const title=direction==='global'?'International Professional Course Pathway':direction==='india'?'India-Focused Professional Course Pathway':'Balanced Professional Course Pathway';const copy=direction==='global'?'Your answers lean toward international recognition, modular study flexibility and global or multinational career environments.':direction==='india'?'Your answers lean toward India-focused professional recognition, structured progression and local career or practice opportunities.':'Your preferences are evenly split between India-focused and international pathways. A side-by-side course comparison will be more useful than forcing one direction.';const courses=direction==='global'?['ACCA','CMA USA','EA / CIAP to explore']:direction==='india'?['CA','CMA India','Skill programmes to complement your path']:['CA / CMA India','ACCA / CMA USA','Compare with a counsellor'];result.querySelector('[data-career-result-title]').textContent=title;result.querySelector('[data-career-result-copy]').textContent=copy;result.querySelector('[data-career-result-courses]').innerHTML=courses.map(x=>'<span>'+x+'</span>').join('');const payload=Object.fromEntries(fd.entries());payload.formType='Career Test';payload.recommendation=title;payload.indiaScore=india;payload.globalScore=global;payload.page=location.pathname;payload.submittedAt=new Date().toISOString();logicTrack('career_test_complete',{recommendation:title,pathway:direction,page:location.pathname,source:'Website Career Test'});try{if(location.protocol.startsWith('http')){const r=await fetch(root+'api/enquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!r.ok)throw new Error('Could not submit. Please try again or contact admissions.');form.hidden=true;result.hidden=false;result.scrollIntoView({behavior:'smooth',block:'center'});logicTrack('lead_submit',{form_type:'career_test',recommendation:title,page:location.pathname,source:'Website Career Test'});}else throw new Error('Please open this test on the website.');}catch(e){form.hidden=false;result.hidden=true;if(err)err.textContent=e.message;} });
     show(0);
   });
 
   async function submitForm(form){
+    if(form.dataset.submitting)return;form.dataset.submitting='true';const submit=form.querySelector('[type=submit],button');if(submit)submit.disabled=true;
     const status=form.querySelector('.form-status'); if(status){status.textContent='Submitting…';status.style.color='inherit';}
     const data=Object.fromEntries(new FormData(form).entries()); data.page=location.pathname; data.submittedAt=new Date().toISOString();
     const kind=form.dataset.form||'enquiry';
     const configured=(window.LOGIC_CONFIG&&window.LOGIC_CONFIG.formEndpoint)||'';
     const endpoint=configured || (location.protocol.startsWith('http') ? root+'api/'+kind : '');
     try{
-      if(endpoint){const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});if(!res.ok)throw new Error('Request failed');}
-      else{const key='logic_'+kind+'_submissions';const saved=JSON.parse(localStorage.getItem(key)||'[]');saved.push(data);localStorage.setItem(key,JSON.stringify(saved));}
-      if(kind==='newsletter'){if(status)status.textContent='Subscribed. Thank you!';form.reset();return;}
-      location.href=root+'thank-you.html';
-    }catch(err){if(status){status.textContent='Could not submit right now. Please call or WhatsApp admissions.';status.style.color='#b42318';}}
+      if(endpoint){const res=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});const response=await res.json().catch(()=>({}));if(!res.ok||!response.ok)throw new Error(response.error||'Request failed');}
+      else{throw new Error('The website server is required to submit this form');}
+      const eventData={form_type:kind,course:data.course||'',branch:data.branch||'',page:location.pathname,source:data.source||''};
+      if(kind==='newsletter'){logicTrack('newsletter_subscribe',{page:location.pathname,source:'Website Newsletter'});if(status)status.textContent='Subscribed. Thank you!';form.reset();return;}
+      logicTrack('lead_submit',eventData);
+      if(location.pathname.includes('placement-assistance'))logicTrack('placement_assistance_submit',{...eventData,source:'Website Placement Assistance'});
+      else if(kind==='contact')logicTrack('contact_submit',eventData);
+      else if(kind==='enquiry')logicTrack('course_enquiry',eventData);
+      setTimeout(()=>{location.href=root+'thank-you.html'},120);
+    }catch(err){if(status){status.textContent='Could not submit right now. Please call or WhatsApp admissions.';status.style.color='#b42318';}}finally{delete form.dataset.submitting;if(submit)submit.disabled=false;}
   }
+  document.addEventListener('click',e=>{
+    if(trackingConfig.trackContactClicks===false)return;
+    const a=e.target.closest('a[href]');if(!a)return;const href=String(a.getAttribute('href')||'');
+    if(/(?:wa\.me\/|api\.whatsapp\.com|whatsapp:\/\/)/i.test(href))logicTrack('whatsapp_click',{page:location.pathname,link_location:a.closest('header')?'header':a.closest('footer')?'footer':'content'});
+    else if(/^tel:/i.test(href))logicTrack('call_click',{page:location.pathname,link_location:a.closest('header')?'header':a.closest('footer')?'footer':'content'});
+  },{passive:true});
   document.querySelectorAll('form[data-form]').forEach(f=>f.addEventListener('submit',e=>{e.preventDefault();submitForm(f)}));
 })();

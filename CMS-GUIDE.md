@@ -1,3 +1,7 @@
+> CMS 7.1: see UPDATE-CMS-7.1.md for safe localhost update steps and the new Global Header, Global Footer, Result Posters, Placement Posters and Banners controls.
+
+> CMS 7: follow SETUP.md for installation. Dynamic blog, result and programme content uses Content Manager. This file retains the original visual-editor guide.
+
 # Logic CMS — Quick User Guide
 
 ## 1. Open the backend
@@ -13,9 +17,9 @@ Open `http://localhost:8080/admin/`.
 Default credentials:
 
 - **Username:** admin
-- **Password:** LogicAdmin@2026
+- **Password:** Use the unique administrator password created with `npm run admin:create`.
 
-Go to **Security** and replace the default password before deployment.
+Go to **Security** and manage your password and optional two-step verification.
 
 ---
 
@@ -29,7 +33,7 @@ Go to **Security** and replace the default password before deployment.
 6. Click the uploaded logo.
 7. Click **Save global settings**.
 
-The logo is then used by the website header/footer through the global CMS settings.
+This is the default logo used by the loader and by header/footer sections without their own logo. For separate images, open **Global Header → Header logo** and **Global Footer → Footer logo**, upload/select an image in each and click **Save globally**.
 
 ---
 

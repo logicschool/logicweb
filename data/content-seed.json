@@ -1,0 +1,239 @@
+{
+  "programs": [
+    {
+      "id": "ca",
+      "title": "CA",
+      "category": "indian",
+      "categoryLabel": "Indian",
+      "description": "Plus Two students & graduates",
+      "duration": "↗ Foundation · Intermediate · Final",
+      "url": "/courses/ca.html",
+      "image": "/assets/course-icons/practice.svg",
+      "order": 0
+    },
+    {
+      "id": "cma-india",
+      "title": "CMA India",
+      "category": "indian",
+      "categoryLabel": "Indian",
+      "description": "Commerce students & graduates",
+      "duration": "↗ Foundation · Intermediate · Final",
+      "url": "/courses/cma-india.html",
+      "image": "/assets/course-icons/advisory.svg",
+      "order": 1
+    },
+    {
+      "id": "ciap",
+      "title": "CIAP",
+      "category": "skill / international",
+      "categoryLabel": "Skill / International",
+      "description": "Graduates / pursuing graduation",
+      "duration": "↗ 6 months",
+      "url": "/courses/ciap.html",
+      "image": "/assets/course-icons/skills.svg",
+      "order": 2
+    },
+    {
+      "id": "acca",
+      "title": "ACCA",
+      "category": "international",
+      "categoryLabel": "International",
+      "description": "Students & global finance aspirants",
+      "duration": "↗ 13 exams before exemptions",
+      "url": "/courses/acca.html",
+      "image": "/assets/course-icons/global.svg",
+      "order": 3
+    },
+    {
+      "id": "cma-usa",
+      "title": "CMA USA",
+      "category": "international",
+      "categoryLabel": "International",
+      "description": "Students & working professionals",
+      "duration": "↗ 2 exam parts",
+      "url": "/courses/cma-usa.html",
+      "image": "/assets/course-icons/corporate.svg",
+      "order": 4
+    },
+    {
+      "id": "cpa-usa",
+      "title": "CPA USA",
+      "category": "international",
+      "categoryLabel": "International",
+      "description": "Accounting graduates & professionals",
+      "duration": "↗ 4 exam sections",
+      "url": "/courses/cpa-usa.html",
+      "image": "/assets/course-icons/practice.svg",
+      "order": 5
+    },
+    {
+      "id": "ea",
+      "title": "EA",
+      "category": "international",
+      "categoryLabel": "International",
+      "description": "Tax professionals & graduates",
+      "duration": "↗ 3-part SEE",
+      "url": "/courses/ea.html",
+      "image": "/assets/course-icons/advisory.svg",
+      "order": 6
+    },
+    {
+      "id": "bcom-acca",
+      "title": "B.Com + ACCA",
+      "category": "integrated",
+      "categoryLabel": "Integrated",
+      "description": "Plus Two students",
+      "duration": "↗ Approx. 3 years",
+      "url": "/courses/bcom-acca.html",
+      "image": "/assets/course-icons/skills.svg",
+      "order": 7
+    },
+    {
+      "id": "mba-acca",
+      "title": "MBA + ACCA",
+      "category": "integrated",
+      "categoryLabel": "Integrated",
+      "description": "Graduates",
+      "duration": "↗ Approx. 2 years",
+      "url": "/courses/mba-acca.html",
+      "image": "/assets/course-icons/global.svg",
+      "order": 8
+    },
+    {
+      "id": "mcom-cpa",
+      "title": "M.Com + CPA",
+      "category": "integrated",
+      "categoryLabel": "Integrated",
+      "description": "Commerce graduates",
+      "duration": "↗ Programme dependent",
+      "url": "/courses/mcom-cpa.html",
+      "image": "/assets/course-icons/corporate.svg",
+      "order": 9
+    }
+  ],
+  "blog_posts": [
+    {
+      "id": "acca-starter-guide",
+      "slug": "acca-starter-guide",
+      "title": "What to Know Before You Start ACCA",
+      "excerpt": "Understand the learning journey, exemptions, study planning and the kinds of roles students commonly explore.",
+      "content": "<section><h2>Think globally, plan locally</h2><p>ACCA is commonly explored by students interested in international accounting and finance. Your study plan should still be built around your present academic stage, exemptions, available time and long-term location goals.</p></section><section><h2>Understand your exemption position</h2><p>Integrated degree students and graduates may be eligible for exemptions depending on their qualification. Confirm your exact exemption status before planning a completion timeline.</p></section><section><h2>Build consistency into the timetable</h2><p>Professional exams reward regular concept practice, question practice and review. A sustainable weekly routine is more useful than short bursts of high-intensity study.</p></section><section><h2>Add practical workplace skills</h2><p>Communication, Excel, reporting tools and practical accounting exposure can complement professional study and help students prepare for internships and entry-level roles.</p></section><div class=\"article-callout\"><span class=\"eyebrow\">NEXT STEP</span><h3>Compare this with your own preferences.</h3><p>Use the career test for a quick pathway suggestion, then verify eligibility and current course rules before making an enrolment decision.</p><a class=\"btn btn-green\" href=\"/career-test.html\">Take Career Test</a></div>",
+      "author": "Logic Career Guide",
+      "publishedDate": "",
+      "category": "global",
+      "categoryLabel": "ACCA",
+      "thumbnail": "",
+      "status": "published"
+    },
+    {
+      "id": "after-plus-two-commerce-path",
+      "slug": "after-plus-two-commerce-path",
+      "title": "Choosing a Commerce Career Path After Plus Two",
+      "excerpt": "Questions to ask before selecting a professional qualification, integrated degree or skill-focused programme.",
+      "content": "<section><h2>Do not begin with salary claims</h2><p>Start with your interests, aptitude, study style and the kind of work you want to learn. Salary varies widely by role, experience, employer, location and performance.</p></section><section><h2>Compare degree and professional routes</h2><p>Some students prefer a traditional degree first, while others choose integrated pathways that combine a degree with a professional qualification. Compare workload, recognition, cost and flexibility.</p></section><section><h2>Ask where the qualification is strongest</h2><p>Indian professional qualifications and international qualifications can lead to different role ecosystems. Neither is automatically better; the fit depends on your goals.</p></section><section><h2>Use a structured assessment</h2><p>Write down your preferred exam style, career location, budget, earning timeline and need for international recognition. A career assessment can turn those preferences into a clearer shortlist.</p></section><div class=\"article-callout\"><span class=\"eyebrow\">NEXT STEP</span><h3>Compare this with your own preferences.</h3><p>Use the career test for a quick pathway suggestion, then verify eligibility and current course rules before making an enrolment decision.</p><a class=\"btn btn-green\" href=\"/career-test.html\">Take Career Test</a></div>",
+      "author": "Logic Career Guide",
+      "publishedDate": "",
+      "category": "compare",
+      "categoryLabel": "AFTER PLUS TWO",
+      "thumbnail": "",
+      "status": "published"
+    },
+    {
+      "id": "ca-foundation-roadmap",
+      "slug": "ca-foundation-roadmap",
+      "title": "CA Foundation: Build a Preparation System That Lasts",
+      "excerpt": "How to structure revision, mock tests and concept practice without turning the study plan into a marathon.",
+      "content": "<section><h2>Create a subject rotation</h2><p>Instead of spending entire weeks on one subject, use a repeatable rotation so every subject receives concept learning, practice and revision.</p></section><section><h2>Track mistakes, not only marks</h2><p>Mock tests are useful when you review why marks were lost. Keep a short error log for weak concepts, presentation issues and time-management mistakes.</p></section><section><h2>Plan backward from the exam window</h2><p>Divide the remaining time into learning, first revision, question practice and final revision. Keep buffer days for difficult chapters and unexpected delays.</p></section><section><h2>Protect consistency</h2><p>A realistic timetable that you can repeat is stronger than an aggressive plan that collapses after a few days. Sleep, breaks and regular testing are part of the preparation system.</p></section><div class=\"article-callout\"><span class=\"eyebrow\">NEXT STEP</span><h3>Compare this with your own preferences.</h3><p>Use the career test for a quick pathway suggestion, then verify eligibility and current course rules before making an enrolment decision.</p><a class=\"btn btn-green\" href=\"/career-test.html\">Take Career Test</a></div>",
+      "author": "Logic Career Guide",
+      "publishedDate": "",
+      "category": "india",
+      "categoryLabel": "CA",
+      "thumbnail": "",
+      "status": "published"
+    },
+    {
+      "id": "cma-usa-decision-guide",
+      "slug": "cma-usa-decision-guide",
+      "title": "CMA USA: A Student-Friendly Decision Guide",
+      "excerpt": "A clear way to think about CMA USA, international recognition, exam preparation and career goals.",
+      "content": "<section><h2>Begin with the type of work you enjoy</h2><p>CMA USA is often considered by students interested in management accounting, performance analysis, planning and finance decision support. Explore the actual subjects and role profiles before deciding.</p></section><section><h2>Consider your preferred learning pace</h2><p>The programme is frequently chosen by graduates and working professionals because the exam structure can fit a focused study plan. Your own preparation time will still depend on prior knowledge and weekly availability.</p></section><section><h2>Global recognition should support a real goal</h2><p>International recognition is most useful when it aligns with the employers, countries or finance roles you genuinely want to pursue.</p></section><section><h2>Compare total investment and support</h2><p>Look beyond tuition alone. Consider exam-related costs, study materials, mentoring, revision support, practical training and placement assistance when comparing providers.</p></section><div class=\"article-callout\"><span class=\"eyebrow\">NEXT STEP</span><h3>Compare this with your own preferences.</h3><p>Use the career test for a quick pathway suggestion, then verify eligibility and current course rules before making an enrolment decision.</p><a class=\"btn btn-green\" href=\"/career-test.html\">Take Career Test</a></div>",
+      "author": "Logic Career Guide",
+      "publishedDate": "",
+      "category": "global",
+      "categoryLabel": "CMA USA",
+      "thumbnail": "",
+      "status": "published"
+    },
+    {
+      "id": "course-comparison-guide",
+      "slug": "course-comparison-guide",
+      "title": "Compare CA, CMA India, ACCA & CMA USA Without the Confusion",
+      "excerpt": "A practical framework for comparing professional pathways by exam style, career geography and learning preferences.",
+      "content": "<section><h2>Start with the career environment you want</h2><p>A professional course should connect with the kind of work environment you want to explore. Some students prefer India-focused statutory, audit and finance pathways, while others prioritise multinational, shared-service or international opportunities.</p></section><section><h2>Compare exam style, not only course popularity</h2><p>Look at how the qualification is assessed, how much syllabus you handle at one time, how frequently exams are available and whether the study rhythm suits your learning style.</p></section><section><h2>Match the course with your current stage</h2><p>A Plus Two student, a graduate and a working professional may need different timelines and delivery modes. Consider your available study time, budget, preferred mode and whether you need to earn while studying.</p></section><section><h2>Use counselling for the final comparison</h2><p>Course rules, exemptions and exam structures can change. Verify the latest requirements from the relevant professional body and use counselling to compare your eligibility before enrolling.</p></section><div class=\"article-callout\"><span class=\"eyebrow\">NEXT STEP</span><h3>Compare this with your own preferences.</h3><p>Use the career test for a quick pathway suggestion, then verify eligibility and current course rules before making an enrolment decision.</p><a class=\"btn btn-green\" href=\"/career-test.html\">Take Career Test</a></div>",
+      "author": "Logic Career Guide",
+      "publishedDate": "",
+      "category": "compare",
+      "categoryLabel": "COURSE CHOICE",
+      "thumbnail": "",
+      "status": "published"
+    },
+    {
+      "id": "practical-accounting-skills",
+      "slug": "practical-accounting-skills",
+      "title": "Why Practical Accounting Skills Matter Alongside Your Degree",
+      "excerpt": "A degree builds academic foundations; practical tools help you translate them into workplace-ready capability.",
+      "content": "<section><h2>Theory explains the why</h2><p>Academic study gives you accounting principles, economics, law and business context. That foundation is essential for understanding professional work.</p></section><section><h2>Practice explains the workflow</h2><p>Tools such as spreadsheets, accounting software, GST workflows and reporting exercises help students understand how information moves through a real business process.</p></section><section><h2>Employability is a combination</h2><p>Recruiters often look for communication, problem solving, digital comfort and the ability to learn quickly in addition to academic knowledge.</p></section><section><h2>Choose practice that is supervised</h2><p>Use training environments, sample data and guided demonstrations. Avoid handling real company credentials or sensitive filings unless you are authorised and properly supervised.</p></section><div class=\"article-callout\"><span class=\"eyebrow\">NEXT STEP</span><h3>Compare this with your own preferences.</h3><p>Use the career test for a quick pathway suggestion, then verify eligibility and current course rules before making an enrolment decision.</p><a class=\"btn btn-green\" href=\"/career-test.html\">Take Career Test</a></div>",
+      "author": "Logic Career Guide",
+      "publishedDate": "",
+      "category": "skills",
+      "categoryLabel": "SKILLS",
+      "thumbnail": "",
+      "status": "published"
+    }
+  ],
+  "result_categories": [
+    {
+      "id": "ca",
+      "title": "CA Results",
+      "thumbnail": "/assets/images/result-poster-1.svg",
+      "description": "",
+      "order": 0
+    },
+    {
+      "id": "cma-usa",
+      "title": "CMA USA Results",
+      "thumbnail": "/assets/images/result-poster-2.svg",
+      "description": "",
+      "order": 1
+    },
+    {
+      "id": "acca",
+      "title": "ACCA Results",
+      "thumbnail": "/assets/images/result-poster-3.svg",
+      "description": "",
+      "order": 2
+    },
+    {
+      "id": "cma-india",
+      "title": "CMA INDIA Results",
+      "thumbnail": "/assets/images/result-poster-4.svg",
+      "description": "",
+      "order": 3
+    },
+    {
+      "id": "ea",
+      "title": "EA Results",
+      "thumbnail": "/assets/images/result-poster-5.svg",
+      "description": "",
+      "order": 4
+    },
+    {
+      "id": "ciap",
+      "title": "CIAP Results",
+      "thumbnail": "/assets/images/result-poster-6.svg",
+      "description": "",
+      "order": 5
+    }
+  ],
+  "results": []
+}

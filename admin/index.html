@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Logic CMS Admin</title>
-<link rel="stylesheet" href="admin.css">
+<link rel="stylesheet" href="admin.css"><link rel="stylesheet" href="/admin/cms-tools.css">
 </head>
 <body>
 <div id="toast" class="toast"></div>
@@ -17,7 +17,7 @@
     <form id="loginForm">
       <label>Username<input name="username" value="admin" autocomplete="username" required></label>
       <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
-      <button class="primary" type="submit">Sign in</button>
+      <label>Authenticator or recovery code (if enabled)<input name="otp" autocomplete="one-time-code"></label><button class="primary" type="submit">Sign in</button>
       <div id="loginError" class="error"></div>
     </form>
   </div>
@@ -26,7 +26,7 @@
 <div id="appView" class="app-shell hidden">
   <aside class="sidebar">
     <a class="admin-brand" href="/admin/"><span>L</span><div><b>Logic CMS</b><small>Admin Panel</small></div></a>
-    <nav id="adminNav">
+    <div class="cms-nav-links"><a href="/admin/layout.html#header">Global Header</a><a href="/admin/layout.html#footer">Global Footer</a><a href="/admin/content.html#programs">Programme Cards</a><a href="/admin/content.html#result_categories">Result Categories</a><a href="/admin/content.html#results">Result Posters</a><a href="/admin/content.html#placement_posters">Placement Posters</a><a href="/admin/content.html#banners">Banners</a><a href="/admin/content.html#blog_posts">Blog Articles</a></div><nav id="adminNav">
       <button class="active" data-section="dashboard"><i>⌂</i> Dashboard</button>
       <button data-section="branding"><i>◆</i> Branding & Global</button>
       <button data-section="pages"><i>✎</i> Page Editor</button>
@@ -84,7 +84,7 @@
           <div class="form-grid">
             <label>Site name<input id="setSiteName"></label>
             <label>Tagline<input id="setTagline"></label>
-            <label class="full">Logo URL<input id="setLogoUrl" placeholder="/uploads/your-logo.png"></label>
+            <label class="full">Default logo URL (loader and fallback)<input id="setLogoUrl" placeholder="/uploads/your-logo.png"></label>
             <label class="full">Favicon URL<input id="setFaviconUrl" placeholder="/assets/favicon.svg"></label>
             <label>Primary green<input id="setPrimary" type="color"></label>
             <label>Accent yellow<input id="setSecondary" type="color"></label>
@@ -132,7 +132,7 @@
 
     <section id="section-pages" class="admin-section wide-section">
       <div class="section-intro editor-head">
-        <div><span class="kicker">VISUAL WEBSITE EDITOR</span><h2>Edit every page</h2><p>Click an element in the preview, edit it in the inspector, and save. Use Source mode for complete HTML control.</p></div>
+        <div><span class="kicker">VISUAL WEBSITE EDITOR</span><h2>Edit every page</h2><p>Click card text or an icon to edit it. Select the whole card for its link and category. Header and footer changes use their Global editors.</p></div>
         <div class="editor-actions"><button id="newPage" class="secondary">New Page</button><button id="duplicatePage" class="secondary">Duplicate</button><button id="deletePage" class="danger">Delete</button><button id="reloadPage" class="secondary">Reload</button><button id="savePage" class="primary">Save Page</button></div>
       </div>
       <div class="editor-toolbar panel">
@@ -199,7 +199,7 @@
           </div>
           <hr>
           <div id="inspectorEmpty" class="empty-state">Click text, an image, a button, a link or any section in the preview.</div>
-          <div id="inspectorFields" class="hidden">
+          <div id="inspectorFields" class="hidden"><div class="cms-selected-record"><button id="selectParentElement" class="secondary" type="button">Select parent / whole card</button><a id="manageSelectedProgram" class="secondary button-link" hidden>Edit programme fields</a><p id="sharedEditHint" hidden></p></div>
             <div class="direct-edit-tip"><b>Tip:</b> Double-click text in the preview to edit it directly. Press <b>Ctrl + Enter</b> to finish.</div>
             <label>Plain text<textarea id="elText" rows="4" placeholder="Edit visible text here"></textarea></label>
             <p class="help inspector-text-help">Plain text is safest for normal text. Use Rich content below only when the element contains formatting such as highlighted words or line breaks.</p>
@@ -470,13 +470,13 @@
     <section id="section-developer" class="admin-section">
       <div class="section-intro"><div><span class="kicker">ADVANCED CONTROL</span><h2>Developer editor</h2><p>Edit core CSS, JavaScript, config, sitemap and robots files. Automatic backups are created before saving.</p></div><button id="saveDevFile" class="primary">Save File</button></div>
       <div class="panel">
-        <label>File<select id="devFileSelect"><option value="assets/styles.css">assets/styles.css</option><option value="assets/site.js">assets/site.js</option><option value="assets/config.js">assets/config.js</option><option value="sitemap.xml">sitemap.xml</option><option value="robots.txt">robots.txt</option></select></label>
+        <label>File<select id="devFileSelect"><option value="partials/header.html">Shared header</option><option value="partials/footer.html">Shared footer</option><option value="assets/styles.css">assets/styles.css</option><option value="assets/site.js">assets/site.js</option><option value="assets/config.js">assets/config.js</option><option value="sitemap.xml">sitemap.xml</option><option value="robots.txt">robots.txt</option></select></label>
         <textarea id="devEditor" class="codebox giant" spellcheck="false"></textarea>
       </div>
       <div class="panel backup-panel"><div class="panel-head"><div><span class="kicker">RECOVERY</span><h3>Recent backups</h3></div><button id="refreshBackups" class="link-btn">Refresh</button></div><div id="backupList" class="backup-list"></div></div>
     </section>
 
-    <section id="section-security" class="admin-section">
+    <section id="section-security" class="admin-section"><p><a class="primary button-link" href="/admin/content.html#security">Manage two-step verification</a></p>
       <div class="section-intro"><div><span class="kicker">ADMIN ACCESS</span><h2>Security</h2><p>Change the admin password before publishing the website to a public server.</p></div></div>
       <article class="panel security-card">
         <h3>Change admin password</h3>

@@ -1,12 +1,37 @@
 {
   "name": "logic-school-website",
-  "version": "4.2.0",
+  "version": "7.1.2",
   "private": true,
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/app.js",
+    "migrate": "node scripts/migrate.js",
+    "admin:create": "node scripts/admin-create.js",
+    "test": "node --test --test-force-exit test/*.test.js",
+    "test:browser": "node test/browser.cjs",
+    "test:cms": "node test/cms-browser.cjs"
   },
   "description": "Logic School premium website with full visual CMS, direct content editing, hero editor, media, typography and animation controls",
   "engines": {
-    "node": ">=18"
+    "node": ">=22"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^18.0.4",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "otpauth": "^9.5.2",
+    "pg": "^8.23.0",
+    "qrcode": "^1.5.4",
+    "sanitize-html": "^2.17.7",
+    "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@sparticuz/chromium": "^153.0.0",
+    "playwright": "^1.63.0"
   }
 }

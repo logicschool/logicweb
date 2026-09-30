@@ -1,0 +1,15 @@
+const express=require('express'),crypto=require('crypto');const {rateLimit}=require('express-rate-limit');
+module.exports=(db,legacy)=>{const r=express.Router();const limit=rateLimit({windowMs:600000,limit:20,standardHeaders:'draft-7',legacyHeaders:false,message:{ok:false,error:'Too many requests. Please try again later.'}});
+ r.post(['/enquiry','/contact','/newsletter','/brochure/request'],limit,async(req,res)=>{const body=req.body||{},kind=req.path==='/brochure/request'?'brochure':req.path.slice(1);if(body.website)return res.status(400).json({ok:false,error:'Submission rejected'});
+ const data={};for(const [k,v]of Object.entries(body)){if(typeof v==='object'||String(v).length>4000)return res.status(400).json({ok:false,error:'Invalid form fields'});if(!['__proto__','constructor','prototype','website','receivedAt','kind','id'].includes(k))data[k]=typeof v==='string'?v.trim():v;}
+ if(kind!=='newsletter'&&(String(data.name||'').length<2||!/^\+?[\d\s().-]{7,25}$/.test(String(data.phone||''))||String(data.phone).replace(/\D/g,'').length<7||String(data.phone).replace(/\D/g,'').length>15))return res.status(400).json({ok:false,error:'Enter your name and a valid phone number'});
+ if((kind==='newsletter'||data.email)&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.email||'')))return res.status(400).json({ok:false,error:'Enter a valid email address'});
+ let brochure;if(kind==='brochure'){brochure=legacy.brochureConfigForKind(String(body.kind||''));if(!brochure?.enabled||!brochure.url)return res.status(404).json({ok:false,error:'This brochure is not available'});data.formType='Brochure Download';data.brochureKind=String(body.kind||'');data.brochureLabel=brochure.label;delete data.kind;}
+ data.source=legacy.crmSourceForLead(kind,data);data.page=String(data.page||'').slice(0,300);const stable={...data};delete stable.submittedAt;const hash=crypto.createHash('sha256').update(JSON.stringify([kind,Object.keys(stable).sort().map(k=>[k,stable[k]])])).digest('hex');
+ const id=crypto.randomUUID();
+ const inserted=await db.query("WITH claim AS (INSERT INTO form_dedup_keys(key,expires_at) VALUES($1,now()+interval '2 minutes') ON CONFLICT(key) DO UPDATE SET expires_at=EXCLUDED.expires_at WHERE form_dedup_keys.expires_at<=now() RETURNING key) INSERT INTO contact_submissions(id,kind,data,dedup_key,crm_status) SELECT $2,$3,$4,$1,$5 WHERE EXISTS(SELECT 1 FROM claim) RETURNING id",[hash,id,kind,JSON.stringify(data),kind==='newsletter'?'not_required':'pending']);
+ const duplicate=inserted.rows.length===0;
+ if(!duplicate && kind!=='newsletter'){
+ legacy.syncLeadToCrm(kind,data).then(v=>db.query('UPDATE contact_submissions SET crm_status=$1 WHERE id=$2',[v.attempted?'synced':'disabled',id])).catch(async()=>{try{await db.query('UPDATE contact_submissions SET crm_status=$1,crm_error=$2 WHERE id=$3',['failed','CRM delivery failed; check protected integration logs before retrying.',id]);}catch{console.error('Could not update CRM delivery status');}});
+ }
+ res.json({ok:true,duplicate,...(brochure?{downloadUrl:'api/brochure/download?token='+encodeURIComponent(legacy.createBrochureDownloadToken(brochure.url))}:{})});});return r;};
