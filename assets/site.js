@@ -1,6 +1,7 @@
 
 (()=>{
-  const root=window.LOGIC_ROOT||'';
+  const root='/';
+  const cleanUrl=value=>window.LogicPublicUrls.href(value,location.pathname,location.origin);
   const trackingConfig=window.LOGIC_TRACKING||{};
   function logicTrack(eventName,params={}){
     if(!trackingConfig.enabled||!eventName)return;
@@ -128,7 +129,7 @@
 
   function ensureResourceNavigation(){
     if(document.querySelector('.site-header[data-layout-managed]'))return;
-    const items=[['Blog','/blog.html'],['Testimonials','/testimonials.html'],['Career Test','/career-test.html'],['Placement Assistance','/placement-assistance.html']];
+    const items=[['Blog','/blog'],['Testimonials','/testimonials'],['Career Test','/career-test'],['Placement Assistance','/placement-assistance']];
     const path='/' + location.pathname.replace(/^\/+/, '');
     document.querySelectorAll('.desktop-nav').forEach(nav=>{
       if(nav.querySelector('.nav-resource-menu'))return;
@@ -177,9 +178,9 @@
   function applyBrochureSettings(brochures){
     if(!brochures||typeof brochures!=='object')return;
     const addButton=(host,config,kind,course='')=>{if(!host||!config?.enabled||!config?.available)return;if(host.querySelector(`[data-brochure-download="${kind}"]`))return;const b=document.createElement('button');b.type='button';b.className='btn btn-outline brochure-download-button';b.setAttribute('data-brochure-download',kind);b.innerHTML=`${String(config.label||'Download Brochure')} <span aria-hidden="true">↓</span>`;b.addEventListener('click',()=>openBrochureLeadGate({kind,course}));host.appendChild(b)};
-    const path=location.pathname.replace(/\/+$/,'');
-    if(path===''||path==='/'||path.endsWith('/index.html')&&!path.includes('/courses/')) addButton(document.querySelector('.home-hero .hero-buttons'),brochures.master,'master','');
-    const m=path.match(/\/courses\/([^/]+)\.html$/);if(m){const slug=m[1],cfg=brochures.courses?.[slug];addButton(document.querySelector('.course-hero .hero-buttons'),cfg,slug,brochureCourseNames[slug]||slug);}
+    const path=window.LogicPublicUrls.canonicalPath(location.pathname)||location.pathname;
+    if(path===''||path==='/'||path==='/index') addButton(document.querySelector('.home-hero .hero-buttons'),brochures.master,'master','');
+    const m=path.match(/^\/courses\/([^/]+)$/);if(m){const slug=m[1],cfg=brochures.courses?.[slug];addButton(document.querySelector('.course-hero .hero-buttons'),cfg,slug,brochureCourseNames[slug]||slug);}
   }
 
   async function applyPublicBrochureSettings(){
@@ -207,14 +208,14 @@
       if(s.tagline&&!document.querySelector('.footer[data-layout-managed]')){document.querySelectorAll('.footer-grid>div:first-child>p').forEach(p=>p.textContent=s.tagline);}
       if(Array.isArray(s.navigation)&&s.navigation.length&&!document.querySelector('.site-header[data-layout-managed]')){
         const current='/' + location.pathname.replace(/^\/+/, '');
-        const navHtml=s.navigation.map(x=>{const active=current===x.url||(x.url==='/courses/index.html'&&current.startsWith('/courses/'))||(x.url==='/results.html'&&current.startsWith('/results/'))||(x.url==='/blog.html'&&current.startsWith('/blog/'));return `<a class="nav-link${active?' active':''}" href="${settingEscape(x.url)}">${settingEscape(x.label)}</a>`}).join('');
+        const navHtml=s.navigation.map(raw=>{const x={...raw,url:cleanUrl(raw.url)};const active=current===x.url||(x.url==='/courses'&&current.startsWith('/courses/'))||(x.url==='/results'&&current.startsWith('/results/'))||(x.url==='/blog'&&current.startsWith('/blog/'));return `<a class="nav-link${active?' active':''}" href="${settingEscape(cleanUrl(x.url))}">${settingEscape(x.label)}</a>`}).join('');
         document.querySelectorAll('.desktop-nav').forEach(n=>n.innerHTML=navHtml);
-        document.querySelectorAll('.mobile-nav').forEach(n=>n.innerHTML=navHtml+`<a href="/admissions.html">Apply Now</a><a href="https://wa.me/${String(s.whatsapp||'919895818581').replace(/\D/g,'')}">WhatsApp</a>`);
-        document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>QUICK LINKS</h4>')+s.navigation.filter(x=>x.label!=='Contact').map(x=>`<a href="${settingEscape(x.url)}">${settingEscape(x.label)}</a>`).join('');});
-        document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{[['Blog','/blog.html'],['Testimonials','/testimonials.html'],['Career Test','/career-test.html'],['Placement Assistance','/placement-assistance.html']].forEach(([label,url])=>{if(![...col.querySelectorAll('a')].some(a=>a.textContent.trim()===label)){const a=document.createElement('a');a.href=url;a.textContent=label;col.appendChild(a)}})});
+        document.querySelectorAll('.mobile-nav').forEach(n=>n.innerHTML=navHtml+`<a href="/admissions">Apply Now</a><a href="https://wa.me/${String(s.whatsapp||'919895818581').replace(/\D/g,'')}">WhatsApp</a>`);
+        document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>QUICK LINKS</h4>')+s.navigation.filter(x=>x.label!=='Contact').map(x=>`<a href="${settingEscape(cleanUrl(x.url))}">${settingEscape(x.label)}</a>`).join('');});
+        document.querySelectorAll('.footer-grid>div:nth-child(2)').forEach(col=>{[['Blog','/blog'],['Testimonials','/testimonials'],['Career Test','/career-test'],['Placement Assistance','/placement-assistance']].forEach(([label,url])=>{if(![...col.querySelectorAll('a')].some(a=>a.textContent.trim()===label)){const a=document.createElement('a');a.href=url;a.textContent=label;col.appendChild(a)}})});
         ensureResourceNavigation();
       }
-      if(Array.isArray(s.footerCourses)&&s.footerCourses.length&&!document.querySelector('.footer[data-layout-managed]')){document.querySelectorAll('.footer-grid>div:nth-child(3)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>COURSES</h4>')+s.footerCourses.map(x=>`<a href="${settingEscape(x.url)}">${settingEscape(x.label)}</a>`).join('');});}
+      if(Array.isArray(s.footerCourses)&&s.footerCourses.length&&!document.querySelector('.footer[data-layout-managed]')){document.querySelectorAll('.footer-grid>div:nth-child(3)').forEach(col=>{const h=col.querySelector('h4');col.innerHTML=(h?h.outerHTML:'<h4>COURSES</h4>')+s.footerCourses.map(x=>`<a href="${settingEscape(cleanUrl(x.url))}">${settingEscape(x.label)}</a>`).join('');});}
       const fallbackSocials=[{label:'Facebook',url:s.facebook||'',iconUrl:'',fit:'contain'},{label:'Instagram',url:s.instagram||'',iconUrl:'',fit:'contain'},{label:'YouTube',url:s.youtube||'',iconUrl:'',fit:'contain'},{label:'LinkedIn',url:s.linkedin||'',iconUrl:'',fit:'contain'}];
       const socials=(Array.isArray(s.socialLinks)&&s.socialLinks.length?s.socialLinks:fallbackSocials).filter(x=>x&&(x.label||x.url||x.iconUrl));
       if(socials.length) document.querySelectorAll('.footer:not([data-layout-managed]) .social-row').forEach(row=>{
@@ -261,7 +262,7 @@
   if(search) search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();document.querySelectorAll('.course-full-card').forEach(c=>c.classList.toggle('hidden',q&&!c.textContent.toLowerCase().includes(q)));});
 
   const params=new URLSearchParams(location.search);
-  if(params.get('course')) document.querySelectorAll('select[name="course"]').forEach(s=>{[...s.options].forEach(o=>{if(o.value.toLowerCase()===params.get('course').toLowerCase()||o.text.toLowerCase().includes(params.get('course').toLowerCase()))s.value=o.value;});});
+  if(params.get('course')) document.querySelectorAll('select[name="course"]').forEach(s=>{const wanted=params.get('course').trim().toLowerCase(),options=[...s.options];const exact=options.find(o=>o.value.toLowerCase()===wanted)||options.find(o=>o.text.toLowerCase()===wanted);const partial=options.filter(o=>o.text.toLowerCase().includes(wanted));const match=exact||(partial.length===1?partial[0]:null);if(match)s.value=match.value;});
   if(params.get('branch')) document.querySelectorAll('select[name="branch"]').forEach(s=>{[...s.options].forEach(o=>{if(o.value.toLowerCase().includes(params.get('branch').toLowerCase()))s.value=o.value;});});
 
   const batchMode=document.getElementById('batchMode'),batchBranch=document.getElementById('batchBranch');
